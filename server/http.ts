@@ -65,8 +65,19 @@ export function fail(err: unknown): Response {
 export type RouteCtx<P> = { req: Request; db: Db; actor: Actor | null; params: P };
 
 /** Wraps a route handler: loads the session, enforces roles, maps errors to the JSON envelope. */
+/** Re-renders the cached public landing page (classes, coaches, gallery) after a change. */
+async function refreshLandingPage(): Promise<void> {
+  try {
+    const { revalidatePath } = await import('next/cache');
+    revalidatePath('/');
+  } catch (err) {
+    // Never fail the request over this; the page refreshes on its own within 10 minutes.
+    console.warn('landing page revalidation failed', err);
+  }
+}
+
 export function route<P = Record<string, string>>(
-  opts: { roles?: Role[] },
+  opts: { roles?: Role[]; refreshLanding?: boolean },
   handler: (ctx: RouteCtx<P>) => Promise<Response>,
 ) {
   return async (req: Request, ctx: { params: Promise<P> }): Promise<Response> => {
@@ -84,7 +95,9 @@ export function route<P = Record<string, string>>(
         if (!opts.roles.includes(actor.role)) return errorBody(403, 'Forbidden');
       }
       const params = ctx?.params ? await ctx.params : ({} as P);
-      return await handler({ req, db, actor, params });
+      const res = await handler({ req, db, actor, params });
+      if (opts.refreshLanding && res.ok) await refreshLandingPage();
+      return res;
     } catch (err) {
       return fail(err);
     }
