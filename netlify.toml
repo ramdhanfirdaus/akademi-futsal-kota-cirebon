@@ -1,0 +1,7 @@
+# Netlify mendeteksi Next.js secara otomatis (adapter OpenNext, tanpa plugin tambahan).
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
