@@ -63,7 +63,14 @@ Setelah selesai, hapus variabel tadi dari terminal:
 Remove-Item Env:DATABASE_URL, Env:SEED_ADMIN_USERNAME, Env:SEED_ADMIN_PASSWORD
 ```
 
-### A3. Pasang Netlify CLI dan login
+### A3. Aktifkan Developer Mode Windows, pasang Netlify CLI, dan login
+
+**Developer Mode wajib aktif** supaya build lokal bisa membuat *symlink*. Tanpa itu, deploy gagal dengan
+`EPERM: operation not permitted, symlink`. Caranya: **Settings → System → For developers → Developer Mode:
+On**, lalu buka ulang terminal.
+
+**Semua perintah `netlify` dijalankan dari folder `afkc`** (`cd d:\WEB\AFKCfkc`), bukan dari folder
+induknya. Kalau dijalankan di folder lain, situs terhubung ke folder yang salah dan hasil deploy kosong (404).
 
 ```powershell
 npm install -g netlify-cli@latest
@@ -137,8 +144,9 @@ netlify deploy --prod
 
 Situs aktif di `https://afkc-cirebon.netlify.app`.
 
-> **Kalau build di komputer gagal** (biasanya karena masalah khusus Windows), bangun di server Netlify saja:
-> `netlify deploy --remote --prod`. Hasilnya sama, hanya proses build-nya berjalan di Netlify.
+> **Kalau build di komputer gagal** dan Developer Mode tidak bisa diaktifkan, bangun di server Netlify:
+> `netlify deploy --remote --prod`. Dengan cara ini folder project diunggah ke Netlify, jadi pastikan `.env`
+> tidak berisi rahasia production.
 
 ### B3. Setelah rilis pertama
 
@@ -199,6 +207,8 @@ migrasi di AFKC selalu dibuat aman untuk versi lama, yaitu hanya menambah tabel 
 | Login gagal terus | Akun admin belum dibuat di Neon (ulangi A2), atau passwordnya lupa. Seed **tidak** mengganti password admin yang sudah ada. Kalau lupa, jalankan A2 lagi dengan `SEED_ADMIN_USERNAME` yang baru (misalnya `admin2`) untuk membuat admin baru. |
 | Error tabel/kolom tidak ada (`relation ... does not exist`) | Migrasi belum dijalankan ke Neon. Ulangi langkah C1. |
 | Aplikasi lambat | Region Neon tidak sama dengan region fungsi Netlify. Cek di Netlify: **Project configuration → Build & deploy → Functions region**. |
+| `EPERM: operation not permitted, symlink` saat deploy | Developer Mode Windows belum aktif (lihat A3). Aktifkan, buka ulang terminal, lalu deploy lagi. |
+| Draft berhasil diunggah tapi halamannya 404 "Page not found" | `netlify` dijalankan dari folder yang salah. Pastikan berada di `afkc` dan `netlify status` menampilkan project yang benar. |
 | `netlify: command not found` | Netlify CLI belum terpasang. Ulangi A3, lalu buka terminal baru. |
 
 ---
