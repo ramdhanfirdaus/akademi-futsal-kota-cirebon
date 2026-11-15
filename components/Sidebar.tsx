@@ -1,13 +1,12 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { NAVIGATION_ITEMS, APP_NAME } from '@/constants';
-import { usePathname } from '@/hooks/usePathname';
-import {useSelector} from "react-redux";
-import {RootState, store} from "@/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store";
 import {logout} from "@/store/slices/authSlice.ts";
 
 interface SidebarProps {
@@ -22,9 +21,16 @@ const Sidebar: React.FC<SidebarProps> = ({
   isMobile
 }) => {
   const auth = useSelector((state: RootState) => state.auth);
-  const pathname = usePathname();
-  const filteredItems = NAVIGATION_ITEMS.filter(item => item.roles.includes(auth?.user?.role));
+  const dispatch = useDispatch<AppDispatch>();
+  const pathname = usePathname() ?? '';
+  const role = auth.user?.role;
+  const filteredItems = NAVIGATION_ITEMS.filter(item => role !== undefined && item.roles.includes(role));
   const router = useRouter();
+
+  const handleLogout = async () => {
+    await dispatch(logout());
+    router.replace('/login');
+  };
 
   const sidebarWidth = isCollapsed ? 'w-20' : 'w-64';
   const mobileTranslate = (isMobile && isCollapsed) ? '-translate-x-full' : 'translate-x-0';
@@ -85,7 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           <div className="p-4 border-t border-slate-800 space-y-2">
             <button
-                onClick={() => store.dispatch(logout())}
+                onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors"
             >
               <LogOut size={20} className={isCollapsed ? 'mx-auto' : ''} />

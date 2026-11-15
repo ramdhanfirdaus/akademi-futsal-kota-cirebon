@@ -1,8 +1,7 @@
 'use client';
 
 import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
-import { store, persistor } from '@/store';
+import { store } from '@/store';
 import './globals.css';
 import { Inter } from 'next/font/google';
 import { NotificationProvider } from "@/components/NotificationSystem.tsx";
@@ -15,9 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body className={`${inter.variable} font-sans bg-slate-50 text-slate-900`}>
                 <NotificationProvider>
                     <Provider store={store}>
-                        <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
-                            {children}
-                        </PersistGate>
+                        {children}
                     </Provider>
                 </NotificationProvider>
             </body>

@@ -3,12 +3,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Menu } from 'lucide-react';
 
 import Sidebar from '../../components/Sidebar.tsx';
 import { APP_NAME } from '../../constants.tsx';
-import { RootState } from "@/store";
+import { AppDispatch, RootState } from "@/store";
+import { fetchMe } from "@/store/slices/authSlice";
 import AppFooter from "@/components/AppFooter.tsx";
 
 export default function DashboardLayout({
@@ -19,13 +20,18 @@ export default function DashboardLayout({
   const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
   const auth = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if (!auth.isAuthenticated) {
-      router.push('/login');
+    if (auth.status === 'idle') dispatch(fetchMe());
+  }, [auth.status, dispatch]);
+
+  useEffect(() => {
+    if (auth.status === 'ready' && !auth.user) {
+      router.replace('/login');
     }
-  }, [auth.isAuthenticated, router]);
+  }, [auth.status, auth.user, router]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -39,7 +45,7 @@ export default function DashboardLayout({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  if (!auth.isAuthenticated) {
+  if (auth.status !== 'ready' || !auth.user) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50 gap-4">
         <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>

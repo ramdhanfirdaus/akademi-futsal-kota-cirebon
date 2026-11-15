@@ -11,17 +11,17 @@ import { APP_NAME } from '../../constants';
 export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const auth = useSelector((state: RootState) => state.auth);
+  const user = useSelector((state: RootState) => state.auth.user);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    if (auth.isAuthenticated) {
-      router.push('/app/dashboard');
+    if (user) {
+      router.replace('/app/dashboard');
     }
-  }, [auth.isAuthenticated, router]);
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +30,9 @@ export default function LoginPage() {
 
     try {
       await dispatch(login({ username, password })).unwrap();
-      router.push('/app/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Login gagal. Cek username & password.');
+      router.replace('/app/dashboard');
+    } catch {
+      setError('Login gagal. Cek username & password.');
     } finally {
       setIsLoggingIn(false);
     }

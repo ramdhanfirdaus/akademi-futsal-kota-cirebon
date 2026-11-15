@@ -1,77 +1,66 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import api from '@/services/api';
-import { AuthState, User } from '@/types';
-import { RootState } from '@/store';
+import type { AuthState, User } from '@/types';
 
 const initialState: AuthState = {
-    user: null,
-    tempToken: null,
-    isAuthenticated: false,
-    isLoading: false,
-    error: null,
+  user: null,
+  status: 'idle',
+  error: null,
 };
 
-const authSlice = createSlice({
-    name: 'auth',
-    initialState,
-    reducers: {
-        setTempToken: (state, action: PayloadAction<string>) => {
-            state.tempToken = action.payload;
-        },
-        clearTempToken: (state) => {
-            state.tempToken = null;
-        },
-        clearAuth: (state) => {
-            state.user = null;
-            state.isAuthenticated = false;
-        }
-    }
-    ,
-    extraReducers: (builder) => {
-        builder
-            // Login
-            .addCase(login.pending, (state) => {
-                state.isLoading = true;
-                state.error = null;
-            })
-            .addCase(login.fulfilled, (state, action: PayloadAction<User>) => {
-                state.user = action.payload;
-                state.isAuthenticated = true;
-                state.isLoading = false;
-            })
-            .addCase(login.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = action.error.message || 'Login failed';
-            })
-            // Logout
-            .addCase(logout.fulfilled, (state) => {
-                state.user = null;
-                state.isAuthenticated = false;
-            });
-    },
+/** Loads the current user from the session cookie; resolves to null when not logged in. */
+export const fetchMe = createAsyncThunk('auth/fetchMe', async () => {
+  try {
+    const res: { data: User } = await api.get('/me');
+    return res.data;
+  } catch {
+    return null;
+  }
 });
 
-export const login = createAsyncThunk(
-    'auth/login',
-    async ({ username, password }: { username: string; password: string }, { dispatch }) => {
-        const res = await api.post('/login', { username, password });
-        const token = res.data.access_token;
-        dispatch(authSlice.actions.setTempToken(token));
-
-        const userRes = await api.get('/me');
-
-        dispatch(authSlice.actions.clearTempToken());
-
-        return { ...userRes.data, token } as User;
-    }
-);
+export const login = createAsyncThunk('auth/login', async ({ username, password }: { username: string; password: string }) => {
+  const res: { data: { user: User } } = await api.post('/login', { username, password });
+  return res.data.user;
+});
 
 export const logout = createAsyncThunk('auth/logout', async () => {
-    await api.post('/logout', null);
+  await api.post('/logout', null);
 });
 
-
-export const selectAuth = (state: RootState) => state.auth;
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    clearAuth: (state) => {
+      state.user = null;
+      state.status = 'ready';
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchMe.pending, (state) => {
+        if (state.status === 'idle') state.status = 'loading';
+      })
+      .addCase(fetchMe.fulfilled, (state, action: PayloadAction<User | null>) => {
+        state.user = action.payload;
+        state.status = 'ready';
+      })
+      .addCase(login.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action: PayloadAction<User>) => {
+        state.user = action.payload;
+        state.status = 'ready';
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.error = action.error.message ?? 'Login gagal';
+      })
+      .addCase(logout.fulfilled, (state) => {
+        state.user = null;
+        state.status = 'ready';
+      });
+  },
+});
 
 export const { clearAuth } = authSlice.actions;
 export default authSlice.reducer;

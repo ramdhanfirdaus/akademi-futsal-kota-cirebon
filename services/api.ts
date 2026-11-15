@@ -2,31 +2,24 @@ import axios from 'axios';
 import { store } from '@/store';
 import { clearAuth } from '@/store/slices/authSlice';
 
+/** Same-origin API: the session lives in an httpOnly cookie, so no Authorization header is needed. */
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 });
 
-api.interceptors.request.use((config)    => {
-    const state = store.getState();
-    const token = state.auth.user?.token || state.auth.tempToken;
-    if (token && config.headers) {
-        config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-});
-
 api.interceptors.response.use(
-    (response) => response.data,
-    (error) => {
-        if (error.response && error.response.status === 401) {
-            store.dispatch(clearAuth());
-        }
-      return Promise.reject(error);
+  (response) => response.data,
+  (error) => {
+    const url: string = error.config?.url ?? '';
+    if (error.response?.status === 401 && url !== '/login' && url !== '/me') {
+      store.dispatch(clearAuth());
     }
+    return Promise.reject(error);
+  },
 );
 
 export default api;

@@ -2,6 +2,7 @@ export interface Meta {
   page: number;
   last_page: number;
   total: number;
+  limit?: number;
 }
 
 export enum UserRole {
@@ -11,10 +12,12 @@ export enum UserRole {
 }
 
 export interface User {
-  id: string;
+  id: number;
   username: string;
   role: UserRole;
-  token: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  student_id: number | null;
+  coach_id: number | null;
 }
 
 export interface Class {
@@ -150,9 +153,8 @@ export interface Payment {
 
 export interface AuthState {
   user: User | null;
-  tempToken?: string;
-  isAuthenticated: boolean;
-  isLoading: boolean;
+  /** 'ready' once the session check (or login/logout) has completed. */
+  status: 'idle' | 'loading' | 'ready';
   error: string | null;
 }
 
@@ -176,12 +178,10 @@ export const BLOOD_TYPES = [
 ];
 
 export interface ApiResponse<T> {
+  status: 'success' | 'error';
+  message: string;
   data: T;
-  meta?: {
-    page: number;
-    last_page: number;
-    total: number;
-  };
+  meta?: Meta & { limit: number };
 }
 
 export interface PaymentMonth {
