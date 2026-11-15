@@ -242,3 +242,17 @@ export interface HolidayPeriod {
   /** YYYY-MM-01 */
   period: string;
 }
+
+/** GET /api/dashboard/participants */
+export interface ParticipantStats {
+  month: string;
+  totals: { active: number; new_this_year: number; classes: number };
+  attendance: { meetings: number; attended: number; rate: number | null };
+  payments: { holiday: boolean; paid: number; unpaid: number };
+  by_class: { id: number; name: string; students: number; attendance_rate: number | null; paid: number }[];
+  gender: { MALE: number; FEMALE: number; UNKNOWN: number };
+  positions: { ANCHOR: number; FLANK: number; PIVOT: number; KIPER: number };
+  age_groups: { label: string; count: number }[];
+  year_join: { year: number; count: number }[];
+  unpaid_students: { id: number; name: string; class: string }[];
+}

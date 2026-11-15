@@ -40,3 +40,13 @@
     @apply mx-auto w-full max-w-[1920px] px-4 sm:px-8 lg:px-16;
   }
 }
+
+/* Phone "Menu" sheet slides up from the bottom bar. */
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Horizontally scrollable chip rows: swipeable without a visible scrollbar. */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

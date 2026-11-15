@@ -15,15 +15,19 @@ import {NotificationType} from "@/types.ts";
 export const APP_NAME = "AFKC";
 export const CONTRIBUTED_NAME = "Universitas Indonesia";
 
+/**
+ * App navigation. `primary` items sit in the phone's bottom bar; the rest live under "Menu".
+ * Labels are what users call things, in Indonesian.
+ */
 export const NAVIGATION_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, roles: ['ADMIN', 'COACH', 'STUDENT'] },
-  { id: 'students', label: 'Students', icon: <Users size={20} />, roles: ['ADMIN', 'COACH'] },
-  { id: 'coaches', label: 'Coaches', icon: <UserSquare2 size={20} />, roles: ['ADMIN'] },
-  { id: 'classes', label: 'Class', icon: <School size={20} />, roles: ['ADMIN', 'COACH'] },
-  { id: 'attendance', label: 'Attendance', icon: <CalendarCheck size={20} />, roles: ['ADMIN', 'COACH'] },
-  { id: 'payments', label: 'Payments', icon: <CreditCard size={20} />, roles: ['ADMIN', 'COACH'] },
-  { id: 'holidays', label: 'Bulan Libur', icon: <CalendarOff size={20} />, roles: ['ADMIN', 'COACH'] },
-  { id: 'profile', label: 'My Profile', icon: <UserCircle size={20} />, roles: ['ADMIN', 'COACH', 'STUDENT'] },
+  { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, roles: ['ADMIN', 'COACH', 'STUDENT'], primary: true },
+  { id: 'students', label: 'Siswa', icon: <Users size={20} />, roles: ['ADMIN', 'COACH'], primary: true },
+  { id: 'attendance', label: 'Absensi', icon: <CalendarCheck size={20} />, roles: ['ADMIN', 'COACH'], primary: true },
+  { id: 'payments', label: 'Iuran', icon: <CreditCard size={20} />, roles: ['ADMIN', 'COACH'], primary: true },
+  { id: 'classes', label: 'Kelas', icon: <School size={20} />, roles: ['ADMIN', 'COACH'], primary: false },
+  { id: 'coaches', label: 'Pelatih', icon: <UserSquare2 size={20} />, roles: ['ADMIN'], primary: false },
+  { id: 'holidays', label: 'Bulan Libur', icon: <CalendarOff size={20} />, roles: ['ADMIN', 'COACH'], primary: false },
+  { id: 'profile', label: 'Profil Saya', icon: <UserCircle size={20} />, roles: ['ADMIN', 'COACH', 'STUDENT'], primary: false },
 ];
 
 export const DAYS: Record<number, string> = {
