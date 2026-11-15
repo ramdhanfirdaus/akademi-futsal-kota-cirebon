@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en">
+        <html lang="id">
             <body className={`${inter.variable} font-sans bg-slate-50 text-slate-900`}>
                 <NotificationProvider>
                     <Provider store={store}>

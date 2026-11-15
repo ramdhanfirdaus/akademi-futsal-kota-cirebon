@@ -86,3 +86,13 @@ non-komersial.
 Semua pengguna bisa mengganti password sendiri di menu **My Profile**. Setelah password diganti (atau di-reset
 oleh admin/pelatih), semua sesi login di perangkat lain otomatis keluar.
 Menghapus siswa/pelatih menonaktifkan akunnya (data riwayat absensi & pembayaran tetap tersimpan).
+
+## Halaman depan (landing page)
+Halaman `/` menampilkan profil AFKC, jadwal latihan, dan daftar pelatih. Jadwal dan pelatih diambil otomatis
+dari database (hanya nama, kelas, dan jam latihan, tanpa username atau data siswa) dan diperbarui paling lambat
+10 menit setelah ada perubahan.
+
+Teks, kontak, dan galeri diatur di `content/site.ts`:
+- **Galeri:** taruh foto di `public/gallery/` lalu tambahkan ke daftar `gallery`, mis.
+  `{ src: '/gallery/latihan-sabtu.jpg', alt: 'Latihan kelas B1 hari Sabtu' }`. Kecilkan foto dulu (lebar ±1600 px).
+- **Kontak:** isi `address`, `whatsapp` (format `62812...`), dan `instagram`; yang kosong tidak ditampilkan.

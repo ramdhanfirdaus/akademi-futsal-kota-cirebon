@@ -1,12 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '@/store';
-import { login } from '@/store/slices/authSlice.ts';
-import { LogIn, Lock, User as UserIcon, Sparkles, Heart } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { APP_NAME } from '../../constants';
+import { ArrowLeft } from 'lucide-react';
+import type { AppDispatch, RootState } from '@/store';
+import { login } from '@/store/slices/authSlice';
+import PasswordInput from '@/components/Input/PasswordInput';
+import Waves from '@/components/landing/Waves';
+import { publicFonts } from '@/lib/fonts';
+
+const field =
+  'w-full rounded-lg border-2 border-slate-300 bg-white px-4 py-3 text-base text-laut-dalam placeholder:text-slate-400 focus:border-laut focus:outline-none';
 
 export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,114 +24,100 @@ export default function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      router.replace('/app/dashboard');
-    }
+    if (user) router.replace('/app/dashboard');
   }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoggingIn(true);
-
     try {
-      await dispatch(login({ username, password })).unwrap();
+      await dispatch(login({ username: username.trim(), password })).unwrap();
       router.replace('/app/dashboard');
     } catch {
-      setError('Login gagal. Cek username & password.');
+      setError('Username atau password salah. Periksa lagi, atau minta pelatih mereset password Anda.');
     } finally {
       setIsLoggingIn(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-blue-50 flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200/50 rounded-full blur-[80px] animate-pulse"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-sky-200/40 rounded-full blur-[100px] animate-bounce duration-[10s]"></div>
-      
-      <div className="max-w-md w-full relative z-10">
-        <div className="text-center mb-8 animate-in fade-in zoom-in duration-700">
-          <div className="relative inline-block group">
-            <div className="w-20 h-20 bg-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-blue-500/40 transform group-hover:rotate-12 transition-transform cursor-pointer overflow-hidden">
-              <img
-                  src="/logo.png"
-                  alt="Logo"
-                  className="w-full h-full object-cover"
-              />
-            </div>
-            <Sparkles className="absolute -top-2 -right-2 text-amber-400 animate-bounce" size={24} />
-          </div>
-          <h1 className="text-4xl font-black text-slate-800 tracking-tight mb-2">
-            Halo! <span className="text-blue-600">{APP_NAME}</span> 👋
-          </h1>
+    <div className={`${publicFonts} font-body grid min-h-screen bg-white text-laut-dalam lg:grid-cols-2`}>
+      {/* Crest panel */}
+      <div className="relative flex flex-col bg-pantai">
+        <div className="px-4 pt-4 sm:px-8 sm:pt-6">
+          <Link href="/" className="inline-flex items-center gap-2 rounded px-1 py-1 text-sm font-medium hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-laut-dalam">
+            <ArrowLeft size={16} aria-hidden /> Kembali ke beranda
+          </Link>
         </div>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 pb-4 pt-2 text-center lg:pb-10">
+          <img src="/logo.png" alt="Lambang Futsal Kota Cirebon" className="w-32 sm:w-40 lg:w-72" />
+          <p className="font-display text-4xl font-black uppercase leading-none sm:text-5xl lg:text-7xl">
+            Akademi Futsal
+            <br />
+            Kota Cirebon
+          </p>
+        </div>
+        <Waves className="hidden lg:block" />
+      </div>
 
-        <form 
-          onSubmit={handleSubmit} 
-          className="bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white space-y-6 animate-in slide-in-from-bottom-8 duration-700"
-        >
-          {error && (
-            <div className="p-3 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold text-center border border-rose-100">
-              {error}
-            </div>
-          )}
-          
-          <div className="space-y-4">
-            <div className="group">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2">
-                Username
-              </label>
-              <div className="relative">
-                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" size={18} />
-                <input 
-                  type="text" 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-sm font-bold"
-                  placeholder="Masukkan username"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="group">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" size={18} />
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-sm font-bold"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-            </div>
+      {/* Form */}
+      <main className="flex items-center justify-center px-4 py-10 sm:px-8 lg:bg-laut-muda">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
+          <div>
+            <h1 className="font-display text-5xl font-black uppercase">Masuk</h1>
+            <p className="mt-2 text-laut-dalam/75">Gunakan username dan password yang diberikan pelatih atau admin AFKC.</p>
           </div>
 
-          <button 
+          {error && (
+            <p role="alert" className="rounded-lg border border-udang/30 bg-udang/10 px-4 py-3 text-sm text-udang-tua">
+              {error}
+            </p>
+          )}
+
+          <div className="space-y-1.5">
+            <label htmlFor="username" className="block text-sm font-bold">
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className={field}
+              placeholder="contoh: budi01"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="password" className="block text-sm font-bold">
+              Password
+            </label>
+            <PasswordInput
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={field}
+              toggleClassName="text-laut-dalam/60 hover:text-laut-dalam focus-visible:outline-laut"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+
+          <button
             type="submit"
             disabled={isLoggingIn}
-            className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-300 text-white font-black py-4 rounded-2xl shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 active:scale-95 group"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-udang py-3.5 text-base font-bold text-white transition-colors hover:bg-udang-tua disabled:bg-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laut-dalam"
           >
-            {isLoggingIn ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-            ) : (
-              <>
-                <LogIn size={20} className="group-hover:translate-x-1 transition-transform" />
-                Masuk Sekarang
-              </>
-            )}
+            {isLoggingIn && <span aria-hidden className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />}
+            {isLoggingIn ? 'Memeriksa…' : 'Masuk'}
           </button>
-          
-          <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-            <Heart size={10} className="inline text-rose-400" /> AFKC Hub • 2026
-          </p>
         </form>
-      </div>
+      </main>
     </div>
   );
 }

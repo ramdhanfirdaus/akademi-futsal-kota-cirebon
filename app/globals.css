@@ -27,3 +27,9 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   @apply bg-blue-200;
 }
+
+/* Landing page: crest waves drift by half their (doubled) width, so the loop is seamless. */
+@keyframes wave {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}

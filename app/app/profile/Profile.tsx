@@ -7,6 +7,7 @@ import { RootState } from '@/store';
 import { ProfileService } from '@/services';
 import { apiErrorMessage } from '@/services/errors';
 import { useNotification } from '@/components';
+import PasswordInput from '@/components/Input/PasswordInput';
 
 const ROLE_LABEL: Record<string, string> = { ADMIN: 'Admin', COACH: 'Pelatih', STUDENT: 'Siswa' };
 
@@ -61,18 +62,18 @@ const Profile: React.FC = () => {
           </h4>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700">Password Lama</label>
-            <input type="password" required autoComplete="current-password" value={form.old_password}
+            <PasswordInput required autoComplete="current-password" value={form.old_password}
               onChange={(e) => setForm({ ...form, old_password: e.target.value })} className={inputCls} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-700">Password Baru</label>
-              <input type="password" required minLength={6} autoComplete="new-password" value={form.new_password}
+              <PasswordInput required minLength={6} autoComplete="new-password" value={form.new_password}
                 onChange={(e) => setForm({ ...form, new_password: e.target.value })} className={inputCls} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-700">Ulangi Password Baru</label>
-              <input type="password" required minLength={6} autoComplete="new-password" value={form.confirm}
+              <PasswordInput required minLength={6} autoComplete="new-password" value={form.confirm}
                 onChange={(e) => setForm({ ...form, confirm: e.target.value })} className={inputCls} />
             </div>
           </div>
