@@ -1,5 +1,7 @@
 import {
   boolean,
+  customType,
+  jsonb,
   date,
   integer,
   pgEnum,
@@ -12,6 +14,11 @@ import {
   unique,
   varchar,
 } from 'drizzle-orm/pg-core';
+
+/** Raw bytes (coach photos). node-postgres returns a Buffer, PGlite a Uint8Array. */
+const bytea = customType<{ data: Uint8Array; driverData: Uint8Array }>({
+  dataType: () => 'bytea',
+});
 
 export const roleEnum = pgEnum('role', ['ADMIN', 'COACH', 'STUDENT']);
 export const userStatusEnum = pgEnum('user_status', ['ACTIVE', 'INACTIVE']);
@@ -62,6 +69,11 @@ export const coaches = pgTable('coaches', {
     .references(() => users.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   nickname: varchar('nickname', { length: 255 }),
+  experience: text('experience'),
+  certifications: jsonb('certifications').$type<string[]>().notNull().default([]),
+  /** Small, client-resized photo shown on the public page; kept in Postgres so no extra storage service is needed. */
+  photo: bytea('photo'),
+  photoType: varchar('photo_type', { length: 32 }),
   ...timestamps,
 });
 

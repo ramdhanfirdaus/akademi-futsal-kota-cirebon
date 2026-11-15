@@ -10,6 +10,8 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
+    // Each test file spins up in-memory Postgres (PGlite); too many at once exhausts memory.
+    maxWorkers: 4,
     testTimeout: 20000,
     hookTimeout: 30000,
     include: ['tests/**/*.test.ts'],

@@ -92,6 +92,10 @@ Halaman `/` menampilkan profil AFKC, jadwal latihan, dan daftar pelatih. Jadwal 
 dari database (hanya nama, kelas, dan jam latihan, tanpa username atau data siswa) dan diperbarui paling lambat
 10 menit setelah ada perubahan.
 
+**Profil pelatih** (foto, pengalaman, sertifikasi) diisi admin di menu **Coaches → Edit**. Foto otomatis
+diperkecil di browser (±600 px, maks. 500 KB) dan disimpan di database, jadi tidak perlu layanan penyimpanan
+file terpisah.
+
 Teks, kontak, dan galeri diatur di `content/site.ts`:
 - **Galeri:** taruh foto di `public/gallery/` lalu tambahkan ke daftar `gallery`, mis.
   `{ src: '/gallery/latihan-sabtu.jpg', alt: 'Latihan kelas B1 hari Sabtu' }`. Kecilkan foto dulu (lebar ±1600 px).

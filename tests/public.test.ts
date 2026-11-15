@@ -24,7 +24,9 @@ describe('publicOverview', () => {
     expect(o.classes).toEqual([
       { name: 'KIPER', coach: 'Fathur', schedules: [{ day_of_week: 6, start_time: '08:00', end_time: '10:00' }] },
     ]);
-    expect(o.coaches).toEqual([{ name: 'Fathur Rahman', nickname: 'Fathur', classes: ['KIPER'] }]);
+    expect(o.coaches).toEqual([
+      { name: 'Fathur Rahman', nickname: 'Fathur', classes: ['KIPER'], experience: null, certifications: [], photo_url: null },
+    ]);
     expect(JSON.stringify(o)).not.toMatch(/username|password|user_id/);
   });
 });

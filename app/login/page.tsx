@@ -103,6 +103,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className={field}
               toggleClassName="text-laut-dalam/60 hover:text-laut-dalam focus-visible:outline-laut"
+              placeholder="Masukkan password"
               autoComplete="current-password"
               required
             />
@@ -111,7 +112,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoggingIn}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-udang py-3.5 text-base font-bold text-white transition-colors hover:bg-udang-tua disabled:bg-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laut-dalam"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-laut-dalam py-3.5 text-base font-bold text-white transition-colors hover:bg-laut disabled:bg-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laut-dalam"
           >
             {isLoggingIn && <span aria-hidden className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />}
             {isLoggingIn ? 'Memeriksa…' : 'Masuk'}

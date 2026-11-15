@@ -220,6 +220,13 @@ const Coaches: React.FC = () => {
                                         >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-blue-50 flex items-center justify-center text-sm font-black text-blue-600">
+                                                        {coach.photo_url ? (
+                                                            <img src={coach.photo_url} alt="" className="h-full w-full object-cover" />
+                                                        ) : (
+                                                            coach.name.split(/\s+/).slice(0, 2).map((w: string) => w[0]?.toUpperCase()).join("")
+                                                        )}
+                                                    </div>
                                                     <div>
                                                         <p className="font-bold text-slate-800 text-sm">{coach.name}</p>
                                                         <p className="text-sm text-slate-400 font-medium">Coach {coach.nickname}</p>

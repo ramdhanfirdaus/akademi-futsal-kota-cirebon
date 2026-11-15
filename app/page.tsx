@@ -4,6 +4,7 @@ import { getDb } from '@/server/db';
 import { publicOverview, type PublicClass, type PublicCoach } from '@/server/services/public';
 import { site } from '@/content/site';
 import { publicFonts } from '@/lib/fonts';
+import { Award } from 'lucide-react';
 import Waves from '@/components/landing/Waves';
 
 export const metadata: Metadata = {
@@ -42,7 +43,7 @@ function initials(name: string) {
     .join('');
 }
 
-const DISC = ['bg-udang', 'bg-daun', 'bg-laut'];
+const DISC = ['bg-laut', 'bg-daun', 'bg-laut-dalam'];
 
 export default async function Home() {
   const { classes, coaches } = await loadOverview();
@@ -62,7 +63,7 @@ export default async function Home() {
 
       {/* Hero: the crest's yellow sky running into its sea. */}
       <header className="bg-pantai">
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <nav className="wrap flex items-center justify-between py-4">
           <Link href="/" className="flex items-center gap-3">
             <img src="/logo.png" alt="" className="h-10 w-10" />
             <span className="font-display text-2xl font-black tracking-wide">{site.short}</span>
@@ -80,16 +81,16 @@ export default async function Home() {
           </div>
         </nav>
 
-        <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-6 pt-6 sm:px-6 md:grid-cols-[1.3fr_1fr] md:pt-12">
+        <div className="wrap grid items-center gap-8 pb-6 pt-6 md:grid-cols-[1.4fr_1fr] md:pt-12">
           <div>
-            <h1 className="font-display text-[clamp(3.5rem,11vw,8.5rem)] font-black uppercase leading-[0.85] tracking-tight">
+            <h1 className="font-display text-[clamp(3.5rem,9vw,10rem)] font-black uppercase leading-[0.85] tracking-tight">
               Akademi Futsal Kota Cirebon
             </h1>
-            <p className="mt-6 max-w-[34rem] text-lg leading-relaxed">{site.intro}</p>
+            <p className="mt-6 max-w-[38rem] text-lg leading-relaxed lg:text-xl">{site.intro}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="#jadwal"
-                className="rounded-full bg-udang px-6 py-3 font-bold text-white transition-colors hover:bg-udang-tua focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laut-dalam"
+                className="rounded-full bg-laut-dalam px-6 py-3 font-bold text-white transition-colors hover:bg-laut focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laut-dalam"
               >
                 Lihat jadwal latihan
               </a>
@@ -104,7 +105,7 @@ export default async function Home() {
           <img
             src="/logo.png"
             alt="Lambang Futsal Kota Cirebon: dua udang di atas ombak dengan bola bermotif mega mendung"
-            className="mx-auto w-56 drop-shadow-[0_12px_0_rgba(8,58,99,0.18)] sm:w-72 md:w-full md:max-w-md"
+            className="mx-auto w-56 drop-shadow-[0_12px_0_rgba(8,58,99,0.18)] sm:w-72 md:w-full md:max-w-lg"
           />
         </div>
         <Waves />
@@ -113,7 +114,7 @@ export default async function Home() {
       <main>
         {/* Timetable: the information parents look for first. */}
         <section id="jadwal" className="scroll-mt-4 bg-laut-dalam pb-20 pt-6 text-white">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="wrap">
             <h2 className="font-display text-5xl font-black uppercase sm:text-6xl">Jadwal latihan</h2>
             <p className="mt-3 max-w-[40rem] text-white/80">{site.about[0]}</p>
 
@@ -149,28 +150,56 @@ export default async function Home() {
         </section>
 
         <section id="pelatih" className="scroll-mt-4 py-20">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="wrap">
             <h2 className="font-display text-5xl font-black uppercase sm:text-6xl">Pelatih</h2>
             <p className="mt-3 max-w-[40rem] text-laut-dalam/75">Setiap kelas punya pelatih tetap yang mendampingi siswanya sepanjang musim.</p>
             {coaches.length === 0 ? (
               <p className="mt-10 text-laut-dalam/75">Daftar pelatih akan segera ditampilkan.</p>
             ) : (
-              <ul className="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+              <ul className="mt-12 grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                 {coaches.map((c, i) => (
-                  <li key={`${c.name}-${i}`} className="flex items-start gap-4">
-                    <span
-                      aria-hidden
-                      className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full font-display text-2xl font-black text-white ${DISC[i % DISC.length]}`}
-                    >
-                      {initials(c.name)}
-                    </span>
-                    <div>
-                      <p className="text-lg font-bold leading-tight">{c.name}</p>
-                      {c.nickname && c.nickname !== c.name && <p className="text-laut-dalam/70">Coach {c.nickname}</p>}
-                      <p className="mt-1 text-sm text-laut-dalam/70">
-                        {c.classes.length ? `Melatih kelas ${c.classes.join(', ')}` : 'Pelatih pendamping'}
-                      </p>
-                    </div>
+                  <li key={`${c.name}-${i}`}>
+                    <article>
+                      <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-laut-muda">
+                        {c.photo_url ? (
+                          <img src={c.photo_url} alt={`Foto ${c.name}`} loading="lazy" className="h-full w-full object-cover" />
+                        ) : (
+                          <span
+                            aria-hidden
+                            className={`flex h-full w-full items-center justify-center font-display text-8xl font-black text-white ${DISC[i % DISC.length]}`}
+                          >
+                            {initials(c.name)}
+                          </span>
+                        )}
+                        {c.classes.length > 0 && (
+                          <p className="absolute bottom-3 left-3 right-3 rounded-lg bg-pantai px-3 py-2 text-sm font-bold">
+                            Kelas {c.classes.join(', ')}
+                          </p>
+                        )}
+                      </div>
+                      <h3 className="mt-5 font-display text-3xl font-black uppercase leading-none">{c.name}</h3>
+                      {c.nickname && c.nickname !== c.name && <p className="mt-1 text-laut-dalam/70">Coach {c.nickname}</p>}
+
+                      {c.experience && (
+                        <div className="mt-4">
+                          <h4 className="text-sm font-bold">Pengalaman</h4>
+                          <p className="mt-1 whitespace-pre-line leading-relaxed text-laut-dalam/80">{c.experience}</p>
+                        </div>
+                      )}
+                      {c.certifications.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="text-sm font-bold">Sertifikasi</h4>
+                          <ul className="mt-2 space-y-1.5">
+                            {c.certifications.map((cert) => (
+                              <li key={cert} className="flex items-start gap-2 text-laut-dalam/80">
+                                <Award size={18} aria-hidden className="mt-0.5 shrink-0 text-daun" />
+                                <span>{cert}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </article>
                   </li>
                 ))}
               </ul>
@@ -179,7 +208,7 @@ export default async function Home() {
         </section>
 
         <section id="galeri" className="scroll-mt-4 bg-laut-muda py-20">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="wrap">
             <h2 className="font-display text-5xl font-black uppercase sm:text-6xl">Galeri</h2>
             {site.gallery.length === 0 ? (
               <p className="mt-3 max-w-[40rem] text-laut-dalam/75">Foto latihan dan pertandingan AFKC akan ditampilkan di sini.</p>
@@ -199,14 +228,14 @@ export default async function Home() {
         </section>
 
         <section className="bg-pantai py-16">
-          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 sm:px-6 md:flex-row md:items-center">
+          <div className="wrap flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <h2 className="font-display text-4xl font-black uppercase sm:text-5xl">Sudah jadi siswa AFKC?</h2>
               <p className="mt-2 max-w-[36rem]">{site.about[1]}</p>
             </div>
             <Link
               href="/login"
-              className="shrink-0 rounded-full bg-udang px-8 py-4 font-bold text-white transition-colors hover:bg-udang-tua focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laut-dalam"
+              className="shrink-0 rounded-full bg-laut-dalam px-8 py-4 font-bold text-white transition-colors hover:bg-laut focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laut-dalam"
             >
               Masuk ke akun
             </Link>
@@ -215,7 +244,7 @@ export default async function Home() {
       </main>
 
       <footer className="bg-laut-dalam py-10 text-white/80">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6 md:flex-row md:items-start md:justify-between">
+        <div className="wrap flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="" className="h-12 w-12" />
             <div>

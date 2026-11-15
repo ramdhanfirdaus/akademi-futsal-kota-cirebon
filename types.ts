@@ -111,6 +111,9 @@ export interface Coach {
   user_id: number;
   name: string;
   nickname?: string;
+  experience?: string | null;
+  certifications?: string[];
+  photo_url?: string | null;
   created_at: string;
   updated_at: string;
 

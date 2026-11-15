@@ -19,6 +19,13 @@ export default function CoachCard({
             className="bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-md hover:border-blue-200 transition-all group"
         >
             <div className="flex flex-col items-center text-center space-y-4">
+                <div className="h-20 w-20 overflow-hidden rounded-full bg-blue-50 flex items-center justify-center text-xl font-black text-blue-600">
+                    {coach.photo_url ? (
+                        <img src={coach.photo_url} alt={`Foto ${coach.name}`} className="h-full w-full object-cover" />
+                    ) : (
+                        coach.name.split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("")
+                    )}
+                </div>
                 <div>
                     <h3 className="text-xl font-black text-slate-800">{coach.name}</h3>
                     <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mt-1">Coach {coach.nickname}</p>
