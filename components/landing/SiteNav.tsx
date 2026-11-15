@@ -15,7 +15,9 @@ const LINKS = [
  * Floating pill navbar: transparent over the hero, frosted white once the page scrolls,
  * highlights the section in view, and folds into a menu on phones.
  */
-export default function SiteNav({ short }: { short: string }) {
+/** `hide`: section ids that are not on the page (e.g. an empty gallery). */
+export default function SiteNav({ short, hide = [] }: { short: string; hide?: string[] }) {
+  const links = LINKS.filter((l) => !hide.includes(l.id));
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -25,13 +27,13 @@ export default function SiteNav({ short }: { short: string }) {
     const onScroll = () => {
       setScrolled(window.scrollY > 24);
       let current: string | null = null;
-      for (const l of LINKS) {
+      for (const l of links) {
         const el = document.getElementById(l.id);
         if (el && el.getBoundingClientRect().top <= window.innerHeight * 0.4) current = l.id;
       }
       // At the very bottom the last section may never reach that line.
       const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
-      if (atBottom && current) current = LINKS[LINKS.length - 1].id;
+      if (atBottom && current) current = links[links.length - 1].id;
       setActive(current);
     };
     onScroll();
@@ -41,7 +43,8 @@ export default function SiteNav({ short }: { short: string }) {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [links.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -66,7 +69,7 @@ export default function SiteNav({ short }: { short: string }) {
         </Link>
 
         <ul className="mx-auto hidden items-center gap-1 md:flex">
-          {LINKS.map((l) => (
+          {links.map((l) => (
             <li key={l.id}>
               <a
                 href={`#${l.id}`}
@@ -104,7 +107,7 @@ export default function SiteNav({ short }: { short: string }) {
           id="menu-situs"
           className="pointer-events-auto mx-auto mt-2 grid max-w-6xl grid-cols-2 gap-2 rounded-3xl border border-white/60 bg-white/95 p-3 shadow-lg backdrop-blur-md motion-safe:animate-[menu-drop_160ms_ease-out] md:hidden"
         >
-          {LINKS.map((l) => (
+          {links.map((l) => (
             <li key={l.id}>
               <a
                 href={`#${l.id}`}

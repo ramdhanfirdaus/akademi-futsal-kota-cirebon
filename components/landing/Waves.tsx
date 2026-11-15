@@ -9,7 +9,7 @@ export default function Waves({ className = '' }: { className?: string }) {
     { fill: '#0A72B8', y: 0, speed: 'animate-[wave_18s_linear_infinite]' },
     { fill: '#FFFFFF', y: 18, speed: 'animate-[wave_24s_linear_infinite_reverse]' },
     { fill: '#0A72B8', y: 36, speed: 'animate-[wave_30s_linear_infinite]' },
-    { fill: '#083A63', y: 54, speed: '' },
+    { fill: '#083A63', y: 54, speed: 'animate-[wave_36s_linear_infinite_reverse]' }, // joins the Jadwal section below
   ];
   return (
     <div aria-hidden className={`relative h-24 overflow-hidden sm:h-32 ${className}`}>
