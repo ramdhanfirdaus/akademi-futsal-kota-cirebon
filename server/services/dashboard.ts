@@ -4,7 +4,7 @@ import { academyStudents, attendances, classSchedules, classes, coaches, payment
 import type { Db } from '../db';
 import type { Actor } from '../auth';
 import { notFound } from '../errors';
-import { addDays, dayOfWeek, eachDate, monthKey } from '@/lib/date';
+import { addDays, dayOfWeek, eachDate, monthKey, monthKeysBetween } from '@/lib/date';
 import { activeSchedulesForClass, retiredOn, type ScheduleDTO } from './classes';
 import { holidayMonthKeys } from './holidays';
 import { coachPhotoUrl } from './coaches';
@@ -109,7 +109,8 @@ export async function studentDashboard(db: Db, actor: Actor, today: string) {
     .from(students)
     .where(eq(students.id, s.id));
   const coach = hasClass ? await classCoach(db, s.classId!) : null;
-  const year = await yearRecord(db, s.id, schedules, today, await enrolledSince(db, s.id, profile.createdAt));
+  const since = await enrolledSince(db, s.id, profile.createdAt);
+  const year = await yearRecord(db, s.id, schedules, today, since);
 
   return {
     name: profile.name,
@@ -123,6 +124,7 @@ export async function studentDashboard(db: Db, actor: Actor, today: string) {
     meetings,
     payment_status,
     months: year,
+    unpaid_months: await unpaidMonths(db, s.id, since, today),
   };
 }
 
@@ -157,6 +159,21 @@ async function enrolledSince(db: Db, studentId: number, createdAt: string): Prom
   const [p] = await db.select({ first: sql<string | null>`min(${payments.period})` }).from(payments).where(eq(payments.studentId, studentId));
   const candidates = [monthKey(retiredOn(createdAt)!), a?.first && monthKey(String(a.first)), p?.first && monthKey(String(p.first))].filter(Boolean) as string[];
   return candidates.sort()[0];
+}
+
+/** Every month from enrolment up to the current one that is neither paid nor a holiday (oldest first). */
+async function unpaidMonths(db: Db, studentId: number, since: string, today: string): Promise<string[]> {
+  const start = `${since}-01`;
+  const holidays = new Set(await holidayMonthKeys(db, start, today));
+  const paid = new Set(
+    (
+      await db
+        .select({ period: payments.period })
+        .from(payments)
+        .where(and(eq(payments.studentId, studentId), between(payments.period, start, today)))
+    ).map((p) => monthKey(p.period)),
+  );
+  return monthKeysBetween(start, today).filter((m) => !holidays.has(m) && !paid.has(m));
 }
 
 export type MonthRecord = {

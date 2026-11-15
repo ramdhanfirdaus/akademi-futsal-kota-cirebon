@@ -240,6 +240,8 @@ export interface StudentDashboard {
   meetings: number;
   payment_status: 'PAID' | 'UNPAID' | 'HOLIDAY';
   /** January–December of the current year. */
+  /** Unpaid, non-holiday months from enrolment up to now, oldest first (YYYY-MM). */
+  unpaid_months: string[];
   months: { month: string; attended: number | null; meetings: number | null; payment: 'PAID' | 'UNPAID' | 'HOLIDAY' | 'UPCOMING' | 'NOT_ENROLLED' }[];
 }
 

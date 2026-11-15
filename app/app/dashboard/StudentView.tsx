@@ -117,6 +117,11 @@ export default function StudentView() {
             {data.payment_status === 'UNPAID' && 'Iuran bulan ini belum tercatat. Bayar ke pelatih atau pengurus, lalu minta dicatat.'}
             {data.payment_status === 'HOLIDAY' && 'Tidak ada iuran dan latihan bulan ini.'}
           </p>
+          {data.unpaid_months.length === 0 && (
+            <p className="mt-3 flex items-center gap-1.5 text-sm font-bold text-daun">
+              <CheckCircle2 size={16} aria-hidden /> Tidak ada tunggakan iuran
+            </p>
+          )}
         </section>
 
         <section className="rounded-xl border border-slate-200 bg-white p-5">
@@ -137,6 +142,27 @@ export default function StudentView() {
           )}
         </section>
       </div>
+
+      {data.unpaid_months.length > 0 && (
+        <section className="rounded-xl border border-udang/30 bg-white p-5" aria-labelledby="tunggakan">
+          <div className="flex items-start gap-3">
+            <AlertCircle size={22} className="mt-0.5 shrink-0 text-udang" aria-hidden />
+            <div className="flex-1">
+              <h3 id="tunggakan" className="font-bold text-laut-dalam">
+                Iuran belum dibayar: {data.unpaid_months.length} bulan
+              </h3>
+              <p className="text-sm text-slate-500">Bayar ke pelatih atau pengurus, lalu minta dicatat di AFKC.</p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {data.unpaid_months.map((m) => (
+                  <li key={m} className="rounded-full border border-udang/30 bg-udang/5 px-3 py-1 text-sm font-bold text-udang-tua">
+                    {MONTH_KEYS[Number(m.slice(5)) - 1]} {m.slice(0, 4)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* The year at a glance: one cell per month with attendance and fee status. */}
       <section className="rounded-xl border border-slate-200 bg-white p-5">

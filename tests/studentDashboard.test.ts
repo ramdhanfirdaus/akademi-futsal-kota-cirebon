@@ -65,6 +65,19 @@ describe('student dashboard', () => {
     ]);
   });
 
+  it('lists unpaid months up to now, skipping holidays and paid months', async () => {
+    // Jan paid, Feb holiday, Mar unpaid; Apr paid in advance but not due yet.
+    expect((await studentDashboard(db, actor, '2026-03-10')).unpaid_months).toEqual(['2026-03']);
+  });
+
+  it('includes unpaid months from the previous year', async () => {
+    const c = await makeClass(db, { coachId: (await makeCoach(db)).coachId });
+    const s = await makeStudent(db, { classId: c.classId, name: 'Dimas' });
+    await db.update(students).set({ createdAt: '2025-11-10 03:00:00' }).where(eq(students.id, s.studentId));
+    const d = await studentDashboard(db, { userId: s.userId, role: 'STUDENT', username: 'dimas01' }, '2026-01-20');
+    expect(d.unpaid_months).toEqual(['2025-11', '2025-12', '2026-01']);
+  });
+
   it('finds the next training session', async () => {
     expect((await studentDashboard(db, actor, '2026-03-10')).next_session).toEqual({
       date: '2026-03-16',
