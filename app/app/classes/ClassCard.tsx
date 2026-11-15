@@ -4,6 +4,7 @@ import Badge from "@/components/Badge";
 import { Class } from "@/types.ts";
 import { DAYS } from "@/constants.tsx";
 import {BaseButton} from "@/components";
+import { classLabel } from '@/lib/format';
 
 interface ClassCardProps {
     cls: Class;
@@ -25,7 +26,7 @@ export default function ClassCard({
 
             <div className="relative z-10 gap-2">
                 <div className="flex justify-between items-start">
-                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">Kelas {cls.name}</h3>
+                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">{classLabel(cls.name)}</h3>
                     <div className="flex gap-2">
                         <BaseButton
                             onClick={() => onEdit(cls)}

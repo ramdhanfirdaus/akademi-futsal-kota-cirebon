@@ -22,7 +22,8 @@ export default function Waves({ className = '' }: { className?: string }) {
           style={{ top: `${b.y}%` }}
         >
           <path d={WAVE} fill={b.fill} />
-          <path d={WAVE} fill={b.fill} transform="translate(720 0)" />
+          {/* 1px overlap hides the hairline seam between the two copies. */}
+          <path d={WAVE} fill={b.fill} transform="translate(719 0)" />
         </svg>
       ))}
     </div>

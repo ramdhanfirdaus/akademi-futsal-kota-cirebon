@@ -23,6 +23,7 @@ import {
     ConfirmModal
 } from "@/components";
 import { CoachService } from "@/services";
+import { classLabel } from '@/lib/format';
 
 const Coaches: React.FC = () => {
     const { showNotification } = useNotification();
@@ -236,7 +237,7 @@ const Coaches: React.FC = () => {
                                             <td className="px-6 py-4">
                                                 <div className="grid grid-cols-3 gap-2">
                                                     {coach.classes?.map((item) => (
-                                                        <Badge title={`Kelas ${item.name}`}/>
+                                                        <Badge title={classLabel(item.name)}/>
                                                     ))}
                                                 </div>
                                             </td>

@@ -20,6 +20,7 @@ import { ClassBoardService } from '@/services';
 import type { BoardColumn } from '@/services/ClassBoardService';
 import { apiErrorMessage } from '@/services/errors';
 import { LoadingSpinner, useNotification } from '@/components';
+import { classLabel } from '@/lib/format';
 
 type Student = { id: number; name: string; nickname: string | null };
 
@@ -246,7 +247,7 @@ export default function ClassBoard() {
                 <option value="">Pindahkan ke…</option>
                 {board.columns.map((c) => (
                   <option key={c.id} value={c.id}>
-                    Kelas {c.name}
+                    {classLabel(c.name)}
                   </option>
                 ))}
               </select>
@@ -324,13 +325,13 @@ function Column({ id, name, count, children }: { id: number; name: string; count
   return (
     <section
       ref={setNodeRef}
-      aria-label={`Kelas ${name}`}
+      aria-label={classLabel(name)}
       className={`flex w-[82vw] max-w-[18rem] shrink-0 snap-start flex-col rounded-xl border-2 transition-colors sm:w-72 ${
         isOver ? 'border-laut bg-laut-muda' : 'border-transparent bg-slate-100'
       }`}
     >
       <h3 className="flex items-center justify-between px-3 pb-2 pt-3">
-        <span className="font-bold text-laut-dalam">Kelas {name}</span>
+        <span className="font-bold text-laut-dalam">{classLabel(name)}</span>
         <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold tabular-nums text-slate-600">{count}</span>
       </h3>
       <ul className="flex max-h-[60vh] min-h-[6rem] flex-col gap-2 overflow-y-auto px-2 pb-2">{children}</ul>
@@ -378,7 +379,7 @@ function Card({
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-bold text-laut-dalam">{student.name}</p>
           {movedFrom ? (
-            <p className="truncate text-xs font-bold text-amber-700">Dari Kelas {movedFrom}</p>
+            <p className="truncate text-xs font-bold text-amber-700">Dari {classLabel(movedFrom)}</p>
           ) : (
             student.nickname && <p className="truncate text-xs text-slate-500">{student.nickname}</p>
           )}

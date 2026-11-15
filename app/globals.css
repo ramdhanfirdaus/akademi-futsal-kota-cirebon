@@ -59,3 +59,20 @@
   .board-scroll { scrollbar-width: none; }
   .board-scroll::-webkit-scrollbar { display: none; }
 }
+
+/* Landing backgrounds drawn from the crest: mega mendung clouds (dark) and sea lines (light). */
+.bg-mendung {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='90' viewBox='0 0 180 90'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='2'%3E%3Cpath d='M0 70a22 22 0 0 1 44 0a22 22 0 0 1 44 0'/%3E%3Cpath d='M9 70a13 13 0 0 1 26 0M53 70a13 13 0 0 1 26 0'/%3E%3Cpath d='M18 70a4 4 0 0 1 8 0M62 70a4 4 0 0 1 8 0'/%3E%3Cpath d='M90 25a22 22 0 0 1 44 0a22 22 0 0 1 44 0'/%3E%3Cpath d='M99 25a13 13 0 0 1 26 0M143 25a13 13 0 0 1 26 0'/%3E%3Cpath d='M108 25a4 4 0 0 1 8 0M152 25a4 4 0 0 1 8 0'/%3E%3C/g%3E%3C/svg%3E");
+}
+.bg-ombak {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='24' viewBox='0 0 120 24'%3E%3Cpath d='M0 12c15 0 15-8 30-8s15 8 30 8 15-8 30-8 15 8 30 8' fill='none' stroke='%230A72B8' stroke-opacity='0.08' stroke-width='2'/%3E%3C/svg%3E");
+}
+.bg-titik {
+  background-image: radial-gradient(rgba(8, 58, 99, 0.12) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+@keyframes menu-drop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -2,6 +2,7 @@ import React from "react";
 import { Edit2, Trash2 } from "lucide-react";
 import { BaseButton, Badge } from "@/components";
 import { Coach } from "@/types.ts";
+import { classLabel } from '@/lib/format';
 
 interface CoachCardProps {
     coach: Coach;
@@ -32,7 +33,7 @@ export default function CoachCard({
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-6 xs:grid-cols-4 gap-2">
                     {coach.classes?.map((item) => (
-                        <Badge title={`Kelas ${item.name}`}/>
+                        <Badge title={classLabel(item.name)}/>
                     ))}
                 </div>
                 <div className="flex gap-2 w-full pt-4">

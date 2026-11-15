@@ -6,6 +6,7 @@ import { EmptyState, AppHeader, useNotification } from '@/components';
 import { DAY_OPTIONS } from "@/constants.tsx";
 import { ClassCard } from './';
 import { CoachService, ClassService } from "@/services";
+import { classLabel } from '@/lib/format';
 
 const Classes: React.FC = () => {
     const { showNotification } = useNotification();
@@ -46,7 +47,7 @@ const Classes: React.FC = () => {
     }, [fetchCoaches]);
 
     const handleDelete = async (id: number, name: string) => {
-        if (window.confirm(`Hapus Kelas ${name}?`)) {
+        if (window.confirm(`Hapus ${classLabel(name)}?`)) {
             try {
                 await ClassService.deleteClass(id);
                 showNotification({ type: 'success', message: 'Kelas berhasil dihapus' });

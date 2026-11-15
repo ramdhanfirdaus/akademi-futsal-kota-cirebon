@@ -13,6 +13,7 @@ import { DashboardService } from '@/services';
 import { apiErrorMessage } from '@/services/errors';
 import { MONTH_KEYS } from '@/constants.tsx';
 import { LoadingSpinner, useNotification } from '@/components';
+import { classLabel } from '@/lib/format';
 
 function monthLabel(key: string) {
   const [y, m] = key.split('-');
@@ -43,7 +44,7 @@ const StaffDashboard: React.FC = () => {
   }, [classId]);
 
   const toggleClass = (id: number) => setClassId((cur) => (cur === id ? undefined : id));
-  const scope = classId ? `Kelas ${allClasses.find((c) => c.id === classId)?.name ?? ''}` : 'Semua kelas';
+  const scope = classId ? classLabel(allClasses.find((c) => c.id === classId)?.name) : 'Semua kelas';
 
   return (
     <div className="space-y-5">
@@ -67,7 +68,7 @@ const StaffDashboard: React.FC = () => {
                       active ? 'border-laut-dalam bg-laut-dalam text-white' : 'border-slate-300 bg-white text-laut-dalam hover:border-laut'
                     }`}
                   >
-                    {c.id ? `Kelas ${c.name}` : c.name}
+                    {c.id ? classLabel(c.name) : c.name}
                   </button>
                 );
               })}
@@ -109,7 +110,7 @@ const StaffDashboard: React.FC = () => {
           <div className="grid gap-4 lg:grid-cols-2">
             <Panel title="Siswa per kelas" description="Ketuk kelas untuk melihat datanya saja.">
               <BarList
-                rows={stats.by_class.map((c) => ({ key: c.id, label: `Kelas ${c.name}`, value: c.students, detail: `Kelas ${c.name}: ${c.students} siswa aktif` }))}
+                rows={stats.by_class.map((c) => ({ key: c.id, label: classLabel(c.name), value: c.students, detail: `${classLabel(c.name)}: ${c.students} siswa aktif` }))}
                 onSelect={(k) => toggleClass(Number(k))}
                 selectedKey={classId}
                 emptyText="Belum ada kelas"
@@ -119,9 +120,9 @@ const StaffDashboard: React.FC = () => {
               <BarList
                 rows={stats.by_class.map((c) => ({
                   key: c.id,
-                  label: `Kelas ${c.name}`,
+                  label: classLabel(c.name),
                   value: c.attendance_rate,
-                  detail: c.attendance_rate === null ? `Kelas ${c.name}: belum ada sesi latihan` : `Kelas ${c.name}: ${c.attendance_rate}% hadir`,
+                  detail: c.attendance_rate === null ? `${classLabel(c.name)}: belum ada sesi latihan` : `${classLabel(c.name)}: ${c.attendance_rate}% hadir`,
                 }))}
                 max={100}
                 format={(v) => `${v}%`}
@@ -155,7 +156,7 @@ const StaffDashboard: React.FC = () => {
                       {stats.unpaid_students.map((s) => (
                         <li key={s.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                           <span className="truncate text-slate-700">{s.name}</span>
-                          <span className="shrink-0 text-slate-500">Kelas {s.class}</span>
+                          <span className="shrink-0 text-slate-500">{classLabel(s.class)}</span>
                         </li>
                       ))}
                     </ul>

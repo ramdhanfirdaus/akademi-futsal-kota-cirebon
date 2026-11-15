@@ -34,6 +34,7 @@ import {
 } from "@/components";
 import { StudentCard, StudentDetail, StudentForm } from "@/app/app/students";
 import { todayWIB } from '@/lib/date';
+import { classLabel } from '@/lib/format';
 
 const Students: React.FC = () => {
     const { showNotification } = useNotification();
@@ -290,7 +291,7 @@ const Students: React.FC = () => {
                                                 title={student.birth_date ? `${getAge(student.birth_date)} Tahun` : '-'}/>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <Badge title={`Kelas ${student.academy_students?.class?.name ?? '-'}`}/>
+                                            <Badge title={classLabel(student.academy_students?.class?.name)}/>
                                         </td>
                                         <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
                                             <div className="flex items-center justify-center gap-1.5">

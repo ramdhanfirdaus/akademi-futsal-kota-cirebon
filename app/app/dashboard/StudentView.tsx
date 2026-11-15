@@ -9,6 +9,7 @@ import { apiErrorMessage } from '@/services/errors';
 import { DAYS, MONTH_KEYS } from '@/constants.tsx';
 import { LoadingSpinner, useNotification } from '@/components';
 import { dayOfWeek, todayWIB } from '@/lib/date';
+import { classLabel } from '@/lib/format';
 
 const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
@@ -59,7 +60,7 @@ export default function StudentView() {
       <section className="overflow-hidden rounded-2xl bg-pantai text-laut-dalam">
         <div className="grid gap-6 p-5 md:grid-cols-[1.4fr_1fr] md:p-8">
           <div>
-            <p className="text-sm font-bold">{data.class ? `Kelas ${data.class.name}` : 'Belum terdaftar di kelas'}</p>
+            <p className="text-sm font-bold">{data.class ? classLabel(data.class.name) : 'Belum terdaftar di kelas'}</p>
             <h2 className="mt-1 font-display text-5xl font-black uppercase leading-none md:text-6xl">Halo, {firstName}!</h2>
             <div className="mt-5 flex items-start gap-3">
               <CalendarClock size={22} className="mt-0.5 shrink-0" aria-hidden />
