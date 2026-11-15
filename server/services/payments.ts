@@ -1,10 +1,10 @@
 import 'server-only';
-import { and, between, eq, inArray } from 'drizzle-orm';
+import { and, between, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { payments } from '../db/schema';
 import type { Db } from '../db';
 import { monthKey, monthKeysBetween, resolveRange } from '@/lib/date';
-import { id } from '../validation';
+import { chunks, id } from '../validation';
 import { holidayMonthKeys, periodSchema } from './holidays';
 import { activeStudentsInClass } from './students';
 
@@ -58,16 +58,19 @@ export async function getPaymentMatrix(db: Db, q: Record<string, string | undefi
 export async function savePayments(db: Db, input: unknown): Promise<void> {
   const d = saveSchema.parse(input);
   const holidays = new Set(await holidayMonthKeys(db));
+  const cells = d.data.flatMap((s) =>
+    s.months.filter((m) => !holidays.has(monthKey(m.period))).map((m) => ({ studentId: s.student_id, period: m.period, paid: m.is_paid })),
+  );
+  const paid = cells.filter((c) => c.paid).map(({ studentId, period }) => ({ studentId, period }));
+  const unpaid = cells.filter((c) => !c.paid);
+
+  // One INSERT and one DELETE per chunk, not one query per cell (the DB may be far from the function).
   await db.transaction(async (tx) => {
-    for (const student of d.data) {
-      for (const m of student.months) {
-        if (holidays.has(monthKey(m.period))) continue;
-        if (m.is_paid) {
-          await tx.insert(payments).values({ studentId: student.student_id, period: m.period }).onConflictDoNothing();
-        } else {
-          await tx.delete(payments).where(and(eq(payments.studentId, student.student_id), eq(payments.period, m.period)));
-        }
-      }
+    for (const part of chunks(paid)) await tx.insert(payments).values(part).onConflictDoNothing();
+    for (const part of chunks(unpaid)) {
+      await tx
+        .delete(payments)
+        .where(sql`(${payments.studentId}, ${payments.period}) in (${sql.join(part.map((c) => sql`(${c.studentId}::int, ${c.period}::date)`), sql`, `)})`);
     }
   });
 }

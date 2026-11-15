@@ -36,7 +36,11 @@ Perintah lain: `npm test` (semua test), `npm run typecheck`, `npm run build`.
 ## Deploy gratis: Netlify + Neon
 
 ### 1. Database (Neon)
-1. Daftar di <https://neon.tech>, buat project baru (region **Singapore** paling dekat).
+1. Daftar di <https://neon.tech>, buat project baru. **Pilih region yang sama dengan server Netlify**, bukan
+   yang paling dekat dengan Cirebon: setiap request API melakukan beberapa query, jadi jarak server ↔ database
+   jauh lebih berpengaruh daripada jarak pengguna ↔ server. Fungsi Netlify secara default berjalan di
+   **US East (Ohio)** → pilih Neon **AWS US East 2 (Ohio)**. Cek region fungsi di Netlify:
+   *Project configuration → Build & deploy → Functions region*; jika berbeda, samakan region Neon-nya.
 2. Di *Connection Details*, pilih **Pooled connection** dan salin connection string-nya
    (host-nya mengandung `-pooler`, diakhiri `?sslmode=require`).
 

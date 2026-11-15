@@ -2,7 +2,7 @@ import 'server-only';
 import { ZodError } from 'zod';
 import { AppError, notFound } from './errors';
 import { getDb, type Db } from './db';
-import { loadActor, readSessionToken, type Actor, type Role } from './auth';
+import { loadActor, readSessionToken, sessionCookieHeader, type Actor, type Role } from './auth';
 
 type Meta = Record<string, unknown>;
 
@@ -57,9 +57,15 @@ export function route<P = Record<string, string>>(
   return async (req: Request, ctx: { params: Promise<P> }): Promise<Response> => {
     try {
       const db = getDb();
-      const actor = await loadActor(db, readSessionToken(req));
+      const token = readSessionToken(req);
+      const actor = await loadActor(db, token);
       if (opts.roles) {
-        if (!actor) return errorBody(401, 'Unauthenticated');
+        if (!actor) {
+          const res = errorBody(401, 'Unauthenticated');
+          // A stale/deactivated session would otherwise bounce between /login and /app via proxy.ts.
+          if (token) res.headers.append('Set-Cookie', sessionCookieHeader(null));
+          return res;
+        }
         if (!opts.roles.includes(actor.role)) return errorBody(403, 'Forbidden');
       }
       const params = ctx?.params ? await ctx.params : ({} as P);

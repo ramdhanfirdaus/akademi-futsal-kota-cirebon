@@ -30,6 +30,19 @@ describe('route()', () => {
     expect(await res.json()).toEqual({ status: 'error', message: 'Unauthenticated' });
   });
 
+  it('clears the cookie when a token no longer maps to an active user', async () => {
+    const u = await makeUser(db, 'COACH', { status: 'INACTIVE' });
+    const h = route({ roles: ['COACH'] }, async () => ok(null));
+    const res = await h(await req(await signSession({ userId: u.id, role: 'COACH' })), ctx);
+    expect(res.status).toBe(401);
+    expect(res.headers.get('set-cookie')).toMatch(new RegExp(`^${SESSION_COOKIE}=;.*Max-Age=0`));
+  });
+
+  it('does not touch cookies for anonymous 401s', async () => {
+    const h = route({ roles: ['ADMIN'] }, async () => ok(null));
+    expect((await h(await req(), ctx)).headers.get('set-cookie')).toBeNull();
+  });
+
   it('returns 403 for the wrong role', async () => {
     const u = await makeUser(db, 'STUDENT');
     const h = route({ roles: ['ADMIN'] }, async () => ok(null));

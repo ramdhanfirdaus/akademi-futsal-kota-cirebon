@@ -1,11 +1,11 @@
 import 'server-only';
-import { and, between, eq, inArray, isNull } from 'drizzle-orm';
+import { and, between, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { academyStudents, attendances, classSchedules, classes, students, users } from '../db/schema';
 import type { Db } from '../db';
 import { invalid, notFound } from '../errors';
-import { id, requiredDate } from '../validation';
-import { dayOfWeek, daysBetween, eachDate } from '@/lib/date';
+import { chunks, id, requiredDate } from '../validation';
+import { dayOfWeek, daysBetween, eachDate, isValidDate } from '@/lib/date';
 import { activeSchedulesForClass } from './classes';
 import { activeStudentsInClass } from './students';
 
@@ -13,10 +13,14 @@ export const MAX_RANGE_DAYS = 93;
 
 const matrixQuery = z
   .object({ class_id: id, start: requiredDate, end: requiredDate })
-  .refine((q) => q.end >= q.start, { message: 'Tanggal selesai harus sama atau setelah tanggal mulai', path: ['end'] })
-  .refine((q) => q.end < q.start || daysBetween(q.start, q.end) <= MAX_RANGE_DAYS, {
-    message: `Rentang maksimal ${MAX_RANGE_DAYS} hari`,
-    path: ['end'],
+  .superRefine((q, ctx) => {
+    // zod still runs object refinements after a field failed; only compare valid dates.
+    if (!isValidDate(q.start) || !isValidDate(q.end)) return;
+    if (q.end < q.start) {
+      ctx.addIssue({ code: 'custom', message: 'Tanggal selesai harus sama atau setelah tanggal mulai', path: ['end'] });
+    } else if (daysBetween(q.start, q.end) > MAX_RANGE_DAYS) {
+      ctx.addIssue({ code: 'custom', message: `Rentang maksimal ${MAX_RANGE_DAYS} hari`, path: ['end'] });
+    }
   });
 
 const saveSchema = z.object({
@@ -101,23 +105,20 @@ export async function saveAttendance(db: Db, input: unknown): Promise<void> {
   });
   if (Object.keys(errors).length) throw invalid(errors);
 
+  const present = list.filter((i) => i.is_present).map((i) => ({ studentId: i.student_id, classScheduleId: i.class_schedule_id, date: i.date }));
+  const absent = list.filter((i) => !i.is_present);
+
+  // Batched writes: one INSERT and one DELETE per chunk instead of one query per cell.
   await db.transaction(async (tx) => {
-    const present = list.filter((i) => i.is_present);
-    if (present.length) {
-      await tx
-        .insert(attendances)
-        .values(present.map((i) => ({ studentId: i.student_id, classScheduleId: i.class_schedule_id, date: i.date })))
-        .onConflictDoNothing();
-    }
-    for (const i of list.filter((x) => !x.is_present)) {
+    for (const part of chunks(present)) await tx.insert(attendances).values(part).onConflictDoNothing();
+    for (const part of chunks(absent)) {
       await tx
         .delete(attendances)
         .where(
-          and(
-            eq(attendances.studentId, i.student_id),
-            eq(attendances.classScheduleId, i.class_schedule_id),
-            eq(attendances.date, i.date),
-          ),
+          sql`(${attendances.studentId}, ${attendances.classScheduleId}, ${attendances.date}) in (${sql.join(
+            part.map((i) => sql`(${i.student_id}::int, ${i.class_schedule_id}::int, ${i.date}::date)`),
+            sql`, `,
+          )})`,
         );
     }
   });

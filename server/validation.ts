@@ -36,3 +36,10 @@ export function pageMeta(page: Page, total: number) {
 }
 
 export const nowIso = () => new Date().toISOString();
+
+/** Splits rows into bounded batches so one statement never exceeds Postgres' parameter limit. */
+export function chunks<T>(rows: T[], size = 1000): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < rows.length; i += size) out.push(rows.slice(i, i + size));
+  return out;
+}

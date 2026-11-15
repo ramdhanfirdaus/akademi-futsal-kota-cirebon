@@ -6,9 +6,12 @@ import * as schema from '@/server/db/schema';
 import type { Db } from '@/server/db';
 
 /** Fresh in-memory Postgres with the production migrations applied. */
-export async function createTestDb(): Promise<Db> {
+export async function createTestDb(opts: { onQuery?: (sql: string) => void } = {}): Promise<Db> {
   const client = new PGlite();
-  const db = drizzle(client, { schema });
+  const db = drizzle(client, {
+    schema,
+    logger: opts.onQuery ? { logQuery: (sql: string) => opts.onQuery!(sql) } : false,
+  });
   await migrate(db, { migrationsFolder: path.resolve(__dirname, '../../drizzle') });
   return db as unknown as Db;
 }

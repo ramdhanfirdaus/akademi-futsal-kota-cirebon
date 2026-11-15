@@ -95,6 +95,13 @@ describe('attendance', () => {
     expect(fail(e3).status).toBe(422);
   });
 
+  it('rejects malformed dates with 422, not 500', async () => {
+    for (const [start, end] of [['abc', 'zzz'], ['2026-01-01', '2026-1-5']]) {
+      const err = await getAttendanceMatrix(db, { class_id: String(classId), start, end }).catch((e) => e);
+      expect(fail(err).status).toBe(422);
+    }
+  });
+
   it('rejects ranges over 93 days', async () => {
     const err = await getAttendanceMatrix(db, { class_id: String(classId), start: '2026-01-01', end: '2026-04-05' }).catch((e) => e);
     expect(fail(err).status).toBe(422);
