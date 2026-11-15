@@ -63,7 +63,7 @@ export interface AcademyStudent {
   id: number;
   student_id: number;
   class_id: number;
-  position: string;
+  position: string | null;
   is_goalkeeper: boolean;
   year_join: number;
   /** First month the fee is owed, YYYY-MM. */
@@ -266,7 +266,7 @@ export interface ParticipantStats {
   payments: { holiday: boolean; paid: number; unpaid: number; not_due: number };
   by_class: { id: number; name: string; students: number; attendance_rate: number | null; paid: number }[];
   gender: { MALE: number; FEMALE: number; UNKNOWN: number };
-  positions: { ANCHOR: number; FLANK: number; PIVOT: number; KIPER: number };
+  positions: { ANCHOR: number; FLANK: number; PIVOT: number; KIPER: number; UNKNOWN: number };
   age_groups: { label: string; count: number }[];
   year_join: { year: number; count: number }[];
   unpaid_students: { id: number; name: string; class: string }[];

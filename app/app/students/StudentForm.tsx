@@ -21,7 +21,7 @@ interface StudentFormClass {
     blood_type?: string;
     disease_history?: string;
     class_id?: number;
-    position?: string;
+    position?: string | null;
     is_goalkeeper?: boolean;
     year_join?: string;
     /** YYYY-MM */
@@ -92,7 +92,7 @@ export default function StudentForm({
 
                     <FormInput
                         label="Password"
-                        required={student.id === undefined}
+                        placeholder="Kosongkan = afkc2026"
                         value={student.password || ""}
                         onChange={(v) => handleChange("password", v.target.value)}
                     />
@@ -174,10 +174,10 @@ export default function StudentForm({
                         <div className="relative">
                             <FormSelect
                                 label="Posisi"
-                                required
+                                emptyLabel="Belum ditentukan"
                                 value={student.position ?? ""}
                                 options={positions}
-                                onChange={(v) => handleChange("position", v.target.value)}
+                                onChange={(v) => handleChange("position", v.target.value || null)}
                             />
 
                             {student.position && student.position != 'KIPER' && (
@@ -195,7 +195,7 @@ export default function StudentForm({
 
                     <FormInput
                         label="Tahun Gabung"
-                        required
+                        placeholder={`Kosongkan = ${new Date().getFullYear()}`}
                         value={student.year_join || ""}
                         onChange={(v) => handleChange("year_join", v.target.value)}
                     />
@@ -204,7 +204,6 @@ export default function StudentForm({
                         <FormInput
                             label="Mulai Iuran"
                             type="month"
-                            required
                             value={student.fee_start || ""}
                             onChange={(v) => handleChange("fee_start", v.target.value)}
                         />

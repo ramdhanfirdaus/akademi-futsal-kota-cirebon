@@ -51,7 +51,7 @@ describe('participantStats', () => {
       { id: b.classId, name: 'B', students: 1, attendance_rate: 50, paid: 0 },
     ]);
     expect(st.gender).toEqual({ MALE: 1, FEMALE: 1, UNKNOWN: 1 });
-    expect(st.positions).toEqual({ ANCHOR: 2, FLANK: 0, PIVOT: 0, KIPER: 1 });
+    expect(st.positions).toEqual({ ANCHOR: 2, FLANK: 0, PIVOT: 0, KIPER: 1, UNKNOWN: 0 });
     expect(st.age_groups.find((g) => g.label === '9–10')?.count).toBe(1);
     expect(st.age_groups.find((g) => g.label === '13–14')?.count).toBe(1);
     expect(st.age_groups.find((g) => g.label === 'Belum diisi')?.count).toBe(1);

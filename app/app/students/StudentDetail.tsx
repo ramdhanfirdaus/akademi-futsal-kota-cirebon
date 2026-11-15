@@ -156,7 +156,7 @@ export default function StudentDetail({
                                 <InfoField
                                     icon={Activity}
                                     label="Primary Position"
-                                    value={student.academy_students?.position || "Not assigned"}
+                                    value={student.academy_students?.position || "Belum ditentukan"}
                                 />
                                 {student.academy_students?.position !== 'KIPER' && (
                                     <div className="flex items-center gap-4">

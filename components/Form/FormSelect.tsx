@@ -10,12 +10,15 @@ interface FormSelectProps
     label: string;
     options: Option[];
     required?: boolean;
+    /** Label for a selectable empty choice (e.g. "Belum ditentukan"); without it the empty choice is a disabled prompt. */
+    emptyLabel?: string;
 }
 
 export default function FormSelect({
     label,
     options,
     required,
+    emptyLabel,
     className = "",
     ...props
 }: FormSelectProps) {
@@ -41,8 +44,8 @@ export default function FormSelect({
                     required={required}
                     {...props}
                 >
-                    <option value="" disabled>
-                        -- Pilih --
+                    <option value="" disabled={!emptyLabel}>
+                        {emptyLabel ?? "-- Pilih --"}
                     </option>
 
                     {options.map((o) => (

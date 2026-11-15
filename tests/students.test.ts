@@ -140,6 +140,7 @@ describe('students', () => {
     const res = fail(await createStudent(db, { class_id: classId }).catch((e) => e));
     expect(res.status).toBe(422);
     const body = await res.json();
-    expect(Object.keys(body.errors)).toEqual(expect.arrayContaining(['name', 'nickname', 'position', 'year_join', 'password']));
+    // Only name and nickname (and class) are required; password, position, year and fee start have defaults.
+    expect(Object.keys(body.errors).sort()).toEqual(['name', 'nickname']);
   });
 });

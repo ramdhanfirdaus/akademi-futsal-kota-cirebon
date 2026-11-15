@@ -6,7 +6,8 @@ import {
     Trash2,
     Edit2,
     RotateCcw,
-    Users
+    Users,
+    FileSpreadsheet
 } from 'lucide-react';
 import {
     Class,
@@ -33,6 +34,7 @@ import {
     ConfirmModal
 } from "@/components";
 import { StudentCard, StudentDetail, StudentForm } from "@/app/app/students";
+import StudentImport from './StudentImport';
 import { todayWIB } from '@/lib/date';
 import { classLabel } from '@/lib/format';
 
@@ -66,6 +68,7 @@ const Students: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [editingStudent, setEditingStudent] = useState<any>(null);
+    const [isImportOpen, setIsImportOpen] = useState(false);
     const classOptions = classes.map(cls => ({
         value: cls.id,
         label: cls.name
@@ -188,6 +191,12 @@ const Students: React.FC = () => {
                             });
                             setIsFormOpen(true);
                         },
+                    },
+                    {
+                        label: "Impor Excel",
+                        icon: FileSpreadsheet,
+                        variant: "secondary",
+                        onClick: () => setIsImportOpen(true),
                     },
                 ]}
             />
@@ -354,6 +363,13 @@ const Students: React.FC = () => {
                     onLimitChange={(limit) => setFilters(f => ({...f, limit, page: 1}))}
                 />
             </div>
+
+            <StudentImport
+                open={isImportOpen}
+                onClose={() => setIsImportOpen(false)}
+                onImported={() => fetchStudents(filters)}
+                classes={classes}
+            />
 
             {/* Form Dialog */}
             {isFormOpen && (

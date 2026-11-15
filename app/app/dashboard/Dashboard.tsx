@@ -20,7 +20,7 @@ function monthLabel(key: string) {
   return `${MONTH_KEYS[Number(m) - 1]} ${y}`;
 }
 
-const POSITION_LABEL: Record<string, string> = { ANCHOR: 'Anchor', FLANK: 'Flank', PIVOT: 'Pivot', KIPER: 'Kiper' };
+const POSITION_LABEL: Record<string, string> = { ANCHOR: 'Anchor', FLANK: 'Flank', PIVOT: 'Pivot', KIPER: 'Kiper', UNKNOWN: 'Belum ditentukan' };
 // Validated categorical pair (blue/amber) plus a neutral for "not filled in".
 const GENDER_COLORS = { MALE: '#0A72B8', FEMALE: '#E0A800', UNKNOWN: '#CBD5E1' };
 

@@ -24,16 +24,18 @@ const bio = {
   disease_history: optLongText,
 };
 
+export const DEFAULT_STUDENT_PASSWORD = 'afkc2026';
+
 const academy = {
   class_id: id,
-  position: z.enum(POSITIONS),
-  year_join: yearJoin,
+  position: optEnum(POSITIONS), // optional: "not decided yet"
+  year_join: z.preprocess((v) => (v === '' || v === null ? undefined : v), yearJoin.optional()), // default: this year
   is_goalkeeper: z.boolean().optional(),
   fee_start: optMonth,
 };
 
-const createSchema = z.object({
-  password,
+export const createSchema = z.object({
+  password: z.preprocess((v) => (v === '' || v === null ? undefined : v), password.optional()), // default afkc2026
   name: reqText,
   nickname: reqText,
   ...bio,
@@ -165,26 +167,36 @@ export async function getStudent(db: Db, actor: Actor, studentId: number): Promi
   return s;
 }
 
+export type NewStudent = z.infer<typeof createSchema>;
+
+/** Inserts one already-validated student (user + profile + enrolment) inside an open transaction. */
+export async function insertStudent(tx: Tx, d: NewStudent): Promise<{ studentId: number; username: string }> {
+  const username = await generateUsername(tx, slugBase(d.nickname, 'siswa'));
+  const user = await createUser(tx, { username, password: d.password ?? DEFAULT_STUDENT_PASSWORD, role: 'STUDENT' });
+  const [s] = await tx
+    .insert(students)
+    .values({ userId: user.id, name: d.name, nickname: d.nickname, ...bioColumns(d) })
+    .returning({ id: students.id });
+  await tx.insert(academyStudents).values({
+    studentId: s.id,
+    classId: d.class_id,
+    position: d.position ?? null,
+    yearJoin: d.year_join ?? Number(todayWIB().slice(0, 4)),
+    isGoalkeeper: d.is_goalkeeper ?? false,
+    feeStart: d.fee_start ?? `${monthKey(todayWIB())}-01`,
+  });
+  return { studentId: s.id, username };
+}
+
 export async function createStudent(db: Db, input: unknown): Promise<StudentDTO> {
   const d = createSchema.parse(input);
-  return withUsernameRetry(() => db.transaction(async (tx) => {
-    await assertClassExists(tx, d.class_id);
-    const username = await generateUsername(tx, slugBase(d.nickname, 'siswa'));
-    const user = await createUser(tx, { username, password: d.password, role: 'STUDENT' });
-    const [s] = await tx
-      .insert(students)
-      .values({ userId: user.id, name: d.name, nickname: d.nickname, ...bioColumns(d) })
-      .returning();
-    await tx.insert(academyStudents).values({
-      studentId: s.id,
-      classId: d.class_id,
-      position: d.position,
-      yearJoin: d.year_join,
-      isGoalkeeper: d.is_goalkeeper ?? false,
-      feeStart: d.fee_start ?? `${monthKey(todayWIB())}-01`,
-    });
-    return findStudent(tx, s.id);
-  }));
+  return withUsernameRetry(() =>
+    db.transaction(async (tx) => {
+      await assertClassExists(tx, d.class_id);
+      const { studentId } = await insertStudent(tx, d);
+      return findStudent(tx, studentId);
+    }),
+  );
 }
 
 export async function updateStudent(db: Db, actor: Actor, studentId: number, input: unknown): Promise<StudentDTO> {
@@ -206,8 +218,8 @@ export async function updateStudent(db: Db, actor: Actor, studentId: number, inp
       .where(eq(students.id, studentId));
     const academyValues = {
       classId: d.class_id,
-      position: d.position,
-      yearJoin: d.year_join,
+      ...(d.position !== undefined ? { position: d.position } : {}),
+      yearJoin: d.year_join ?? current.academy_students?.year_join ?? Number(todayWIB().slice(0, 4)),
       ...(d.is_goalkeeper !== undefined ? { isGoalkeeper: d.is_goalkeeper } : {}),
       ...(d.fee_start ? { feeStart: d.fee_start } : {}),
     };

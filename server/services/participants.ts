@@ -107,13 +107,13 @@ export async function participantStats(db: Db, today: string, q: Record<string, 
 
   // --- Composition ---
   const gender = { MALE: 0, FEMALE: 0, UNKNOWN: 0 };
-  const positions = Object.fromEntries(POSITIONS.map((p) => [p, 0])) as Record<(typeof POSITIONS)[number], number>;
+  const positions = { ...(Object.fromEntries(POSITIONS.map((p) => [p, 0])) as Record<(typeof POSITIONS)[number], number>), UNKNOWN: 0 };
   const ageCounts = new Map<string, number>(AGE_GROUPS.map((g) => [g.label, 0]));
   let noAge = 0;
   const years = new Map<number, number>();
   for (const s of roster) {
     gender[s.gender ?? 'UNKNOWN'] += 1;
-    positions[s.position] += 1;
+    positions[s.position ?? 'UNKNOWN'] += 1;
     years.set(s.yearJoin, (years.get(s.yearJoin) ?? 0) + 1);
     if (!s.birthDate) noAge += 1;
     else {

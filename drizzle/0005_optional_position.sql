@@ -1,0 +1,1 @@
+ALTER TABLE "academy_students" ALTER COLUMN "position" DROP NOT NULL;

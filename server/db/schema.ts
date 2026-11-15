@@ -109,7 +109,8 @@ export const academyStudents = pgTable('academy_students', {
   classId: integer('class_id')
     .notNull()
     .references(() => classes.id, { onDelete: 'restrict' }),
-  position: positionEnum('position').notNull(),
+  /** null = not decided yet */
+  position: positionEnum('position'),
   yearJoin: integer('year_join').notNull(),
   /** First month (YYYY-MM-01) the monthly fee is owed. Defaults to the month the student is added (WIB). */
   feeStart: date('fee_start', { mode: 'string' })
