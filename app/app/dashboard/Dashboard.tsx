@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, Users, School, CalendarCheck, Calendar, Wallet, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, Users, School, CalendarCheck, Wallet, CheckCircle2 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
-import { ParticipantStats, StudentDashboard, UserRole } from '@/types.ts';
+import { ParticipantStats, UserRole } from '@/types.ts';
 import { BarList, Panel, SplitBar, StatTile } from './charts';
+import StudentView from './StudentView';
 import { RootState } from '@/store';
 import { DashboardService } from '@/services';
 import { apiErrorMessage } from '@/services/errors';
-import { DAYS, MONTH_KEYS } from '@/constants.tsx';
+import { MONTH_KEYS } from '@/constants.tsx';
 import { LoadingSpinner, useNotification } from '@/components';
 
 function monthLabel(key: string) {
@@ -186,78 +187,6 @@ const StaffDashboard: React.FC = () => {
           </Panel>
         </div>
       )}
-    </div>
-  );
-};
-
-const PAYMENT_LABEL: Record<StudentDashboard['payment_status'], { text: string; cls: string }> = {
-  PAID: { text: 'Lunas', cls: 'text-emerald-700' },
-  UNPAID: { text: 'Belum dibayar', cls: 'text-rose-600' },
-  HOLIDAY: { text: 'Libur (tidak ada iuran)', cls: 'text-amber-700' },
-};
-
-const StudentView: React.FC = () => {
-  const { showNotification } = useNotification();
-  const [data, setData] = useState<StudentDashboard | null>(null);
-
-  useEffect(() => {
-    DashboardService.getStudentDashboard()
-      .then((res) => setData(res.data))
-      .catch((e) => showNotification({ type: 'error', message: apiErrorMessage(e) }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  if (!data) return <LoadingSpinner text="Memuat data..." />;
-
-  const percent = data.meetings ? Math.round((data.attended / data.meetings) * 100) : 0;
-  const payment = PAYMENT_LABEL[data.payment_status];
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <header>
-        <h2 className="text-2xl font-bold text-slate-800">Halo!</h2>
-        <p className="text-slate-500">Ringkasan latihanmu bulan {monthLabel(data.month)}.</p>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><CheckCircle2 /></div>
-            <span className="text-2xl font-bold text-slate-800">{data.attended} / {data.meetings}</span>
-          </div>
-          <p className="text-sm font-medium text-slate-500">Kehadiran bulan ini</p>
-          <div className="w-full bg-slate-100 h-2 rounded-full mt-4">
-            <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${percent}%` }}></div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Calendar /></div>
-            <p className="text-sm font-bold text-slate-800">{data.class ? `Kelas ${data.class.name}` : 'Belum ada kelas'}</p>
-          </div>
-          <p className="text-sm font-medium text-slate-500">Jadwal latihan</p>
-          {data.schedules.length === 0 ? (
-            <p className="text-xs text-slate-400 mt-2">Belum ada jadwal</p>
-          ) : (
-            <ul className="mt-2 space-y-1">
-              {data.schedules.map((s) => (
-                <li key={s.id} className="text-xs text-slate-600">
-                  {DAYS[s.day_of_week]}, {s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl"><Wallet /></div>
-            <span className={`text-sm font-bold ${payment.cls}`}>{payment.text}</span>
-          </div>
-          <p className="text-sm font-medium text-slate-500">Iuran bulan ini</p>
-        </div>
-      </div>
     </div>
   );
 };

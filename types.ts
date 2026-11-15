@@ -229,12 +229,18 @@ export interface DashboardSummary {
 }
 
 export interface StudentDashboard {
+  name: string;
+  nickname: string | null;
   class: { id: number; name: string } | null;
+  coach: { name: string; nickname: string | null; photo_url: string | null } | null;
   schedules: Schedule[];
+  next_session: { date: string; start_time: string; end_time: string } | null;
   month: string;
   attended: number;
   meetings: number;
   payment_status: 'PAID' | 'UNPAID' | 'HOLIDAY';
+  /** January–December of the current year. */
+  months: { month: string; attended: number | null; meetings: number | null; payment: 'PAID' | 'UNPAID' | 'HOLIDAY' | 'UPCOMING' | 'NOT_ENROLLED' }[];
 }
 
 export interface HolidayPeriod {

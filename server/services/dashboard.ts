@@ -1,12 +1,13 @@
 import 'server-only';
-import { and, between, count, eq, inArray, isNull } from 'drizzle-orm';
+import { and, between, count, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { academyStudents, attendances, classSchedules, classes, coaches, payments, students, users } from '../db/schema';
 import type { Db } from '../db';
 import type { Actor } from '../auth';
 import { notFound } from '../errors';
-import { dayOfWeek, eachDate, monthKey } from '@/lib/date';
-import { activeSchedulesForClass, type ScheduleDTO } from './classes';
+import { addDays, dayOfWeek, eachDate, monthKey } from '@/lib/date';
+import { activeSchedulesForClass, retiredOn, type ScheduleDTO } from './classes';
 import { holidayMonthKeys } from './holidays';
+import { coachPhotoUrl } from './coaches';
 
 /**
  * Expected meetings vs. attended meetings in [start, end], skipping holiday months,
@@ -103,12 +104,109 @@ export async function studentDashboard(db: Db, actor: Actor, today: string) {
     if (p) payment_status = 'PAID';
   }
 
+  const [profile] = await db
+    .select({ name: students.name, nickname: students.nickname, createdAt: students.createdAt })
+    .from(students)
+    .where(eq(students.id, s.id));
+  const coach = hasClass ? await classCoach(db, s.classId!) : null;
+  const year = await yearRecord(db, s.id, schedules, today, await enrolledSince(db, s.id, profile.createdAt));
+
   return {
+    name: profile.name,
+    nickname: profile.nickname,
     class: hasClass ? { id: s.classId!, name: s.className! } : null,
+    coach,
     schedules,
+    next_session: nextSession(schedules, today, new Set(await holidayMonthKeys(db, today, addDays(today, 120)))),
     month,
     attended,
     meetings,
     payment_status,
+    months: year,
   };
+}
+
+async function classCoach(db: Db, classId: number) {
+  const [c] = await db
+    .select({ id: coaches.id, name: coaches.name, nickname: coaches.nickname, updatedAt: coaches.updatedAt, hasPhoto: sql<boolean>`${coaches.photo} is not null` })
+    .from(classes)
+    .innerJoin(coaches, eq(coaches.id, classes.coachId))
+    .innerJoin(users, eq(users.id, coaches.userId))
+    .where(and(eq(classes.id, classId), eq(users.status, 'ACTIVE')));
+  return c ? { name: c.name, nickname: c.nickname, photo_url: c.hasPhoto ? coachPhotoUrl(c.id, c.updatedAt) : null } : null;
+}
+
+/** First scheduled session on or after today, skipping holiday months (looks ~4 months ahead). */
+function nextSession(schedules: ScheduleDTO[], today: string, holidays: Set<string>) {
+  if (!schedules.length) return null;
+  for (let i = 0; i <= 120; i++) {
+    const date = addDays(today, i);
+    if (holidays.has(monthKey(date))) continue;
+    const s = schedules.find((x) => x.day_of_week === dayOfWeek(date));
+    if (s) return { date, start_time: s.start_time.slice(0, 5), end_time: s.end_time.slice(0, 5) };
+  }
+  return null;
+}
+
+/**
+ * Month the student's record starts: the earliest of account creation, first attendance and
+ * first payment (data entered for earlier months still counts).
+ */
+async function enrolledSince(db: Db, studentId: number, createdAt: string): Promise<string> {
+  const [a] = await db.select({ first: sql<string | null>`min(${attendances.date})` }).from(attendances).where(eq(attendances.studentId, studentId));
+  const [p] = await db.select({ first: sql<string | null>`min(${payments.period})` }).from(payments).where(eq(payments.studentId, studentId));
+  const candidates = [monthKey(retiredOn(createdAt)!), a?.first && monthKey(String(a.first)), p?.first && monthKey(String(p.first))].filter(Boolean) as string[];
+  return candidates.sort()[0];
+}
+
+export type MonthRecord = {
+  month: string;
+  /** null for months that have not started yet */
+  attended: number | null;
+  meetings: number | null;
+  payment: 'PAID' | 'UNPAID' | 'HOLIDAY' | 'UPCOMING' | 'NOT_ENROLLED';
+};
+
+/** January–December of today's year: sessions held vs attended (to date) and fee status per month. */
+async function yearRecord(db: Db, studentId: number, schedules: ScheduleDTO[], today: string, since: string): Promise<MonthRecord[]> {
+  const y = today.slice(0, 4);
+  const yearStart = `${y}-01-01`;
+  const yearEnd = `${y}-12-31`;
+  const current = monthKey(today);
+  const holidays = new Set(await holidayMonthKeys(db, yearStart, yearEnd));
+  const paid = new Set(
+    (
+      await db
+        .select({ period: payments.period })
+        .from(payments)
+        .where(and(eq(payments.studentId, studentId), between(payments.period, yearStart, yearEnd)))
+    ).map((p) => monthKey(p.period)),
+  );
+  const byId = new Map(schedules.map((s) => [s.id, s]));
+  const attendedDates = byId.size
+    ? await db
+        .select({ date: attendances.date, scheduleId: attendances.classScheduleId })
+        .from(attendances)
+        .where(and(eq(attendances.studentId, studentId), between(attendances.date, yearStart, today), inArray(attendances.classScheduleId, [...byId.keys()])))
+    : [];
+
+  return Array.from({ length: 12 }, (_, i) => {
+    const month = `${y}-${String(i + 1).padStart(2, '0')}`;
+    if (month < since) return { month, attended: null, meetings: null, payment: 'NOT_ENROLLED' as const };
+    const holiday = holidays.has(month);
+    const payment: MonthRecord['payment'] = holiday ? 'HOLIDAY' : paid.has(month) ? 'PAID' : month > current ? 'UPCOMING' : 'UNPAID';
+    if (month > current) return { month, attended: null, meetings: null, payment };
+    if (holiday) return { month, attended: 0, meetings: 0, payment };
+    const end = month === current ? today : lastDay(month);
+    let meetings = 0;
+    for (const date of eachDate(`${month}-01`, end)) if (schedules.some((s) => s.day_of_week === dayOfWeek(date))) meetings += 1;
+    const attended = attendedDates.filter((a) => monthKey(a.date) === month && byId.get(a.scheduleId)?.day_of_week === dayOfWeek(a.date)).length;
+    return { month, attended, meetings, payment };
+  });
+}
+
+function lastDay(month: string): string {
+  // Day 0 of the next month is the last day of this one.
+  const [y, m] = month.split('-').map(Number);
+  return new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
 }
