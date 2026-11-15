@@ -18,6 +18,7 @@ const PAYMENT: Record<Payment, { label: string; icon: React.ReactNode; tone: str
   UNPAID: { label: 'Belum bayar', icon: <AlertCircle size={16} aria-hidden />, tone: 'text-udang' },
   HOLIDAY: { label: 'Libur', icon: <CalendarOff size={16} aria-hidden />, tone: 'text-slate-500' },
   UPCOMING: { label: 'Belum jatuh tempo', icon: <Clock size={16} aria-hidden />, tone: 'text-slate-400' },
+  NOT_DUE: { label: 'Belum mulai iuran', icon: <Minus size={16} aria-hidden />, tone: 'text-slate-400' },
   NOT_ENROLLED: { label: 'Belum terdaftar', icon: <Minus size={16} aria-hidden />, tone: 'text-slate-300' },
 };
 
@@ -116,6 +117,7 @@ export default function StudentView() {
             {data.payment_status === 'PAID' && 'Terima kasih, iuran bulan ini sudah tercatat.'}
             {data.payment_status === 'UNPAID' && 'Iuran bulan ini belum tercatat. Bayar ke pelatih atau pengurus, lalu minta dicatat.'}
             {data.payment_status === 'HOLIDAY' && 'Tidak ada iuran dan latihan bulan ini.'}
+            {data.payment_status === 'NOT_DUE' && 'Iuranmu belum mulai dihitung bulan ini.'}
           </p>
           {data.unpaid_months.length === 0 && (
             <p className="mt-3 flex items-center gap-1.5 text-sm font-bold text-daun">

@@ -175,6 +175,9 @@ const Payments: React.FC = () => {
           <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase">
             <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div> Libur
           </div>
+          <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase">
+            <span className="text-slate-300">–</span> Belum mulai iuran
+          </div>
         </div>
       </div>
 

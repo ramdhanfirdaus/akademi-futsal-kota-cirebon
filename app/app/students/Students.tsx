@@ -33,6 +33,7 @@ import {
     ConfirmModal
 } from "@/components";
 import { StudentCard, StudentDetail, StudentForm } from "@/app/app/students";
+import { todayWIB } from '@/lib/date';
 
 const Students: React.FC = () => {
     const { showNotification } = useNotification();
@@ -180,7 +181,9 @@ const Students: React.FC = () => {
                         icon: Plus,
                         onClick: () => {
                             setEditingStudent({
-                                password: "afkc2026"
+                                password: "afkc2026",
+                                // Fees start in the month the student is added unless changed.
+                                fee_start: todayWIB().slice(0, 7),
                             });
                             setIsFormOpen(true);
                         },

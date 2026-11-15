@@ -45,7 +45,7 @@ describe('participantStats', () => {
     expect(st.totals).toEqual({ active: 3, new_this_year: 1, classes: 2 });
     // A: 2 students x 1 Saturday = 2 meetings, 1 attended. B: 1 student x 2 Mondays, 1 attended.
     expect(st.attendance).toEqual({ meetings: 4, attended: 2, rate: 50 });
-    expect(st.payments).toEqual({ holiday: false, paid: 1, unpaid: 2 });
+    expect(st.payments).toEqual({ holiday: false, paid: 1, unpaid: 2, not_due: 0 });
     expect(st.by_class).toEqual([
       { id: a.classId, name: 'A', students: 2, attendance_rate: 50, paid: 1 },
       { id: b.classId, name: 'B', students: 1, attendance_rate: 50, paid: 0 },
@@ -72,7 +72,7 @@ describe('participantStats', () => {
   it('reports a holiday month instead of unpaid fees', async () => {
     await db.insert(holidayPeriods).values({ period: '2026-11-01' });
     const st = await participantStats(db, TODAY, {});
-    expect(st.payments).toEqual({ holiday: true, paid: 0, unpaid: 0 });
+    expect(st.payments).toEqual({ holiday: true, paid: 0, unpaid: 0, not_due: 0 });
     expect(st.unpaid_students).toEqual([]);
     expect(st.attendance).toEqual({ meetings: 0, attended: 0, rate: null });
   });

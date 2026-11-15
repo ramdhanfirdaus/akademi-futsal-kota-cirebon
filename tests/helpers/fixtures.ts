@@ -46,13 +46,14 @@ export async function makeClass(
 
 export async function makeStudent(
   db: Db,
-  opts: { classId: number; name?: string; nickname?: string; status?: Status; username?: string; password?: string },
+  opts: { classId: number; name?: string; nickname?: string; status?: Status; username?: string; password?: string; feeStart?: string },
 ) {
   const u = await makeUser(db, 'STUDENT', opts);
   const [s] = await db
     .insert(students)
     .values({ userId: u.id, name: opts.name ?? `Siswa ${u.id}`, nickname: opts.nickname ?? `s${u.id}` })
     .returning();
-  await db.insert(academyStudents).values({ studentId: s.id, classId: opts.classId, position: 'ANCHOR', yearJoin: 2024 });
+  // Fees owed since they joined, so month-based tests are not affected by today's date.
+  await db.insert(academyStudents).values({ studentId: s.id, classId: opts.classId, position: 'ANCHOR', yearJoin: 2024, feeStart: opts.feeStart ?? '2024-01-01' });
   return { studentId: s.id, userId: u.id };
 }

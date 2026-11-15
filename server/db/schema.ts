@@ -14,6 +14,7 @@ import {
   unique,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 /** Raw bytes (coach photos). node-postgres returns a Buffer, PGlite a Uint8Array. */
 const bytea = customType<{ data: Uint8Array; driverData: Uint8Array }>({
@@ -110,6 +111,10 @@ export const academyStudents = pgTable('academy_students', {
     .references(() => classes.id, { onDelete: 'restrict' }),
   position: positionEnum('position').notNull(),
   yearJoin: integer('year_join').notNull(),
+  /** First month (YYYY-MM-01) the monthly fee is owed. Defaults to the month the student is added (WIB). */
+  feeStart: date('fee_start', { mode: 'string' })
+    .notNull()
+    .default(sql`(date_trunc('month', now() at time zone 'Asia/Jakarta'))::date`),
   isGoalkeeper: boolean('is_goalkeeper').notNull().default(false),
   photo: text('photo'),
   ...timestamps,

@@ -24,6 +24,8 @@ interface StudentFormClass {
     position?: string;
     is_goalkeeper?: boolean;
     year_join?: string;
+    /** YYYY-MM */
+    fee_start?: string | null;
     parent_name?: string;
     parent_phone?: string;
 }
@@ -197,6 +199,17 @@ export default function StudentForm({
                         value={student.year_join || ""}
                         onChange={(v) => handleChange("year_join", v.target.value)}
                     />
+
+                    <div className="space-y-1">
+                        <FormInput
+                            label="Mulai Iuran"
+                            type="month"
+                            required
+                            value={student.fee_start || ""}
+                            onChange={(v) => handleChange("fee_start", v.target.value)}
+                        />
+                        <p className="px-2 text-xs text-slate-500">Bulan pertama siswa wajib membayar iuran. Bulan sebelumnya tidak dihitung tunggakan.</p>
+                    </div>
                 </div>
 
                 <div className="pt-4 border-t">

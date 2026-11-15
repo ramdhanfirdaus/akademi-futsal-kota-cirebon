@@ -66,6 +66,8 @@ export interface AcademyStudent {
   position: string;
   is_goalkeeper: boolean;
   year_join: number;
+  /** First month the fee is owed, YYYY-MM. */
+  fee_start: string;
   photo: string | null;
   created_at: string;
   updated_at: string;
@@ -94,6 +96,9 @@ export interface Student {
 
   created_at: string;
   updated_at: string;
+
+  /** First month the fee is owed, YYYY-MM. */
+  fee_start?: string | null;
 
   academy_students: AcademyStudent;
 }
@@ -191,6 +196,8 @@ export interface PaymentMonth {
   period: string;
   is_paid: boolean;
   is_holiday: boolean;
+  /** Before the student's fee start: nothing owed. */
+  not_due: boolean;
 }
 
 export interface PaymentStudent {
@@ -238,11 +245,11 @@ export interface StudentDashboard {
   month: string;
   attended: number;
   meetings: number;
-  payment_status: 'PAID' | 'UNPAID' | 'HOLIDAY';
+  payment_status: 'PAID' | 'UNPAID' | 'HOLIDAY' | 'NOT_DUE';
   /** January–December of the current year. */
   /** Unpaid, non-holiday months from enrolment up to now, oldest first (YYYY-MM). */
   unpaid_months: string[];
-  months: { month: string; attended: number | null; meetings: number | null; payment: 'PAID' | 'UNPAID' | 'HOLIDAY' | 'UPCOMING' | 'NOT_ENROLLED' }[];
+  months: { month: string; attended: number | null; meetings: number | null; payment: 'PAID' | 'UNPAID' | 'HOLIDAY' | 'UPCOMING' | 'NOT_ENROLLED' | 'NOT_DUE' }[];
 }
 
 export interface HolidayPeriod {
@@ -256,7 +263,7 @@ export interface ParticipantStats {
   month: string;
   totals: { active: number; new_this_year: number; classes: number };
   attendance: { meetings: number; attended: number; rate: number | null };
-  payments: { holiday: boolean; paid: number; unpaid: number };
+  payments: { holiday: boolean; paid: number; unpaid: number; not_due: number };
   by_class: { id: number; name: string; students: number; attendance_rate: number | null; paid: number }[];
   gender: { MALE: number; FEMALE: number; UNKNOWN: number };
   positions: { ANCHOR: number; FLANK: number; PIVOT: number; KIPER: number };

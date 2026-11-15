@@ -5,7 +5,8 @@ import { academyStudents, classes, students, users } from '../db/schema';
 import type { Db } from '../db';
 import type { Actor } from '../auth';
 import { forbidden, invalid, notFound } from '../errors';
-import { id, nowIso, optDate, optEnum, optLongText, optStr, optText, pageMeta, pageQuery, optPassword, password, reqText, yearJoin } from '../validation';
+import { monthKey, todayWIB } from '@/lib/date';
+import { id, nowIso, optDate, optMonth, optEnum, optLongText, optStr, optText, pageMeta, pageQuery, optPassword, password, reqText, yearJoin } from '../validation';
 import { createUser, deactivateUser, generateUsername, slugBase, updateUser, withUsernameRetry, type Tx } from './users';
 
 const GENDERS = ['MALE', 'FEMALE'] as const;
@@ -28,6 +29,7 @@ const academy = {
   position: z.enum(POSITIONS),
   year_join: yearJoin,
   is_goalkeeper: z.boolean().optional(),
+  fee_start: optMonth,
 };
 
 const createSchema = z.object({
@@ -95,6 +97,8 @@ async function loadStudents(db: Tx, where: SQL | undefined, page?: { limit: numb
     position: a?.position ?? null,
     year_join: a?.yearJoin ?? null,
     is_goalkeeper: a?.isGoalkeeper ?? false,
+    /** First month the fee is owed, `YYYY-MM`. */
+    fee_start: a ? a.feeStart.slice(0, 7) : null,
     academy_students: a
       ? {
           id: a.id,
@@ -103,6 +107,7 @@ async function loadStudents(db: Tx, where: SQL | undefined, page?: { limit: numb
           position: a.position,
           year_join: a.yearJoin,
           is_goalkeeper: a.isGoalkeeper,
+          fee_start: a.feeStart.slice(0, 7),
           photo: a.photo,
           created_at: a.createdAt,
           updated_at: a.updatedAt,
@@ -176,6 +181,7 @@ export async function createStudent(db: Db, input: unknown): Promise<StudentDTO>
       position: d.position,
       yearJoin: d.year_join,
       isGoalkeeper: d.is_goalkeeper ?? false,
+      feeStart: d.fee_start ?? `${monthKey(todayWIB())}-01`,
     });
     return findStudent(tx, s.id);
   }));
@@ -203,6 +209,7 @@ export async function updateStudent(db: Db, actor: Actor, studentId: number, inp
       position: d.position,
       yearJoin: d.year_join,
       ...(d.is_goalkeeper !== undefined ? { isGoalkeeper: d.is_goalkeeper } : {}),
+      ...(d.fee_start ? { feeStart: d.fee_start } : {}),
     };
     if (current.academy_students) {
       await tx.update(academyStudents).set({ ...academyValues, updatedAt: nowIso() }).where(eq(academyStudents.studentId, studentId));

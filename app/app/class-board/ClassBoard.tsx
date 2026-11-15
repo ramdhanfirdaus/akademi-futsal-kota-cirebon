@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -14,7 +14,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import { ArrowRight, Check, GripVertical, RotateCcw, Save, Search, X } from 'lucide-react';
+import { ArrowRight, Check, ChevronLeft, ChevronRight, GripVertical, RotateCcw, Save, Search, X } from 'lucide-react';
 
 import { ClassBoardService } from '@/services';
 import type { BoardColumn } from '@/services/ClassBoardService';
@@ -68,6 +68,7 @@ export default function ClassBoard() {
   const [query, setQuery] = useState('');
   const [dragging, setDragging] = useState<number[] | null>(null);
   const [target, setTarget] = useState('');
+  const scroller = useHorizontalScroll(board.columns.length);
 
   useEffect(() => {
     ClassBoardService.getBoard()
@@ -164,7 +165,35 @@ export default function ClassBoard() {
         <p className="rounded-xl border border-slate-200 bg-white p-6 text-slate-600">Belum ada kelas. Buat kelas dulu di menu Kelas.</p>
       ) : (
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setDragging(null)}>
-          <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm text-slate-500">{board.columns.length} kelas</p>
+            {(scroller.canLeft || scroller.canRight) && (
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => scroller.by(-1)}
+                  disabled={!scroller.canLeft}
+                  aria-label="Geser ke kelas sebelumnya"
+                  className="rounded-full border-2 border-slate-200 bg-white p-1.5 text-laut-dalam hover:border-laut disabled:opacity-30"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scroller.by(1)}
+                  disabled={!scroller.canRight}
+                  aria-label="Geser ke kelas berikutnya"
+                  className="rounded-full border-2 border-slate-200 bg-white p-1.5 text-laut-dalam hover:border-laut disabled:opacity-30"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
+          </div>
+          <div
+            ref={scroller.ref}
+            className="board-scroll -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 md:mx-0 md:snap-none md:px-0"
+          >
             {board.columns.map((col) => {
               const list = [...board.placement]
                 .filter(([, cid]) => cid === col.id)
@@ -263,6 +292,31 @@ export default function ClassBoard() {
       )}
     </div>
   );
+}
+
+/** Tracks whether a horizontal scroller can move left/right, and scrolls it by about one column. */
+function useHorizontalScroll(columnCount: number) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ canLeft: false, canRight: false });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const next = { canLeft: el.scrollLeft > 4, canRight: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 };
+      // Only re-render when an edge actually changes.
+      setEdges((prev) => (prev.canLeft === next.canLeft && prev.canRight === next.canRight ? prev : next));
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', update);
+      ro.disconnect();
+    };
+  }, [columnCount]);
+  const by = (dir: number) => ref.current?.scrollBy({ left: dir * 300, behavior: 'smooth' });
+  return { ref, ...edges, by };
 }
 
 function Column({ id, name, count, children }: { id: number; name: string; count: number; children: React.ReactNode }) {

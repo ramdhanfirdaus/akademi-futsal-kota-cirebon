@@ -31,6 +31,18 @@ export const optEnum = <T extends readonly [string, ...string[]]>(values: T) =>
 
 export const id = z.coerce.number().int().positive();
 
+/** A month as `YYYY-MM` (or any date in it); stored as the first day, `YYYY-MM-01`. */
+export const optMonth = z
+  .preprocess(
+    blank,
+    z
+      .string()
+      .regex(/^\d{4}-(0[1-9]|1[0-2])(-\d{2})?$/, 'Bulan tidak valid (format YYYY-MM)')
+      .transform((s) => `${s.slice(0, 7)}-01`)
+      .nullable(),
+  )
+  .optional();
+
 export const yearJoin = z
   .union([z.string(), z.number()])
   .transform((v) => String(v).trim())

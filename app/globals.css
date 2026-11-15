@@ -50,3 +50,12 @@
 /* Horizontally scrollable chip rows: swipeable without a visible scrollbar. */
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Class board: a slim, always-visible horizontal scrollbar on laptops (hidden on phones, where swiping is natural). */
+.board-scroll { scrollbar-width: thin; scrollbar-color: #94a3b8 transparent; }
+.board-scroll::-webkit-scrollbar { height: 8px; }
+.board-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 9999px; }
+@media (max-width: 767px) {
+  .board-scroll { scrollbar-width: none; }
+  .board-scroll::-webkit-scrollbar { display: none; }
+}

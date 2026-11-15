@@ -14,6 +14,7 @@ import {
     Trophy, Shield
 } from "lucide-react";
 import { Student } from "@/types";
+import { MONTH_KEYS } from '@/constants';
 
 interface StudentDetailProps {
     student: Student;
@@ -146,6 +147,11 @@ export default function StudentDetail({
                                     icon={Calendar}
                                     label="Joined Academy"
                                     value={student.academy_students?.year_join?.toString() || "-"}
+                                />
+                                <InfoField
+                                    icon={Calendar}
+                                    label="Mulai Iuran"
+                                    value={student.fee_start ? `${MONTH_KEYS[Number(student.fee_start.slice(5, 7)) - 1]} ${student.fee_start.slice(0, 4)}` : "-"}
                                 />
                                 <InfoField
                                     icon={Activity}

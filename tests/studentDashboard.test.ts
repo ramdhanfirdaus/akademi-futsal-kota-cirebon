@@ -17,7 +17,7 @@ beforeEach(async () => {
   const { coachId } = await makeCoach(db, { name: 'Fathur Rizki', nickname: 'Fathur' });
   const c = await makeClass(db, { coachId, name: 'B1', schedules: [{ day_of_week: 1, start_time: '16:00', end_time: '18:00' }] });
   monday = c.scheduleIds[0];
-  const s = await makeStudent(db, { classId: c.classId, name: 'Budi Santoso', nickname: 'Budi' });
+  const s = await makeStudent(db, { classId: c.classId, name: 'Budi Santoso', nickname: 'Budi', feeStart: '2026-01-01' });
   studentId = s.studentId;
   actor = { userId: s.userId, role: 'STUDENT', username: 'budi01' };
   // Mondays: Jan 5,12,19,26 · Feb 2,9,16,23 (holiday) · Mar 2,9,16
@@ -55,7 +55,7 @@ describe('student dashboard', () => {
   it('does not count months before the student enrolled', async () => {
     // No records at all, account created on 5 March.
     const c = await makeClass(db, { coachId: (await makeCoach(db)).coachId, schedules: [{ day_of_week: 1, start_time: '16:00', end_time: '18:00' }] });
-    const s = await makeStudent(db, { classId: c.classId, name: 'Rizky' });
+    const s = await makeStudent(db, { classId: c.classId, name: 'Rizky', feeStart: '2026-03-01' });
     await db.update(students).set({ createdAt: '2026-03-05 10:00:00' }).where(eq(students.id, s.studentId));
     const d = await studentDashboard(db, { userId: s.userId, role: 'STUDENT', username: 'rizky01' }, '2026-03-10');
     expect(d.months.slice(0, 3)).toEqual([
@@ -72,7 +72,7 @@ describe('student dashboard', () => {
 
   it('includes unpaid months from the previous year', async () => {
     const c = await makeClass(db, { coachId: (await makeCoach(db)).coachId });
-    const s = await makeStudent(db, { classId: c.classId, name: 'Dimas' });
+    const s = await makeStudent(db, { classId: c.classId, name: 'Dimas', feeStart: '2025-11-01' });
     await db.update(students).set({ createdAt: '2025-11-10 03:00:00' }).where(eq(students.id, s.studentId));
     const d = await studentDashboard(db, { userId: s.userId, role: 'STUDENT', username: 'dimas01' }, '2026-01-20');
     expect(d.unpaid_months).toEqual(['2025-11', '2025-12', '2026-01']);

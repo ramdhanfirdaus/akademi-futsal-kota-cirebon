@@ -81,7 +81,7 @@ export async function dashboardSummary(db: Db, today: string) {
 
 export async function studentDashboard(db: Db, actor: Actor, today: string) {
   const [s] = await db
-    .select({ id: students.id, classId: academyStudents.classId, className: classes.name, classDeleted: classes.deletedAt })
+    .select({ id: students.id, classId: academyStudents.classId, className: classes.name, classDeleted: classes.deletedAt, feeStart: academyStudents.feeStart })
     .from(students)
     .leftJoin(academyStudents, eq(academyStudents.studentId, students.id))
     .leftJoin(classes, eq(classes.id, academyStudents.classId))
@@ -94,7 +94,14 @@ export async function studentDashboard(db: Db, actor: Actor, today: string) {
   const { meetings, attended } = await attendanceTotals(db, `${month}-01`, today, s.id);
 
   const holidays = await holidayMonthKeys(db, `${month}-01`, today);
-  let payment_status: 'PAID' | 'UNPAID' | 'HOLIDAY' = 'UNPAID';
+  const [profile] = await db
+    .select({ name: students.name, nickname: students.nickname, createdAt: students.createdAt })
+    .from(students)
+    .where(eq(students.id, s.id));
+  const since = await enrolledSince(db, s.id, profile.createdAt, s.feeStart);
+  const feeMonth = s.feeStart ? monthKey(s.feeStart) : since;
+
+  let payment_status: 'PAID' | 'UNPAID' | 'HOLIDAY' | 'NOT_DUE' = 'UNPAID';
   if (holidays.includes(month)) payment_status = 'HOLIDAY';
   else {
     const [p] = await db
@@ -102,15 +109,11 @@ export async function studentDashboard(db: Db, actor: Actor, today: string) {
       .from(payments)
       .where(and(eq(payments.studentId, s.id), eq(payments.period, `${month}-01`)));
     if (p) payment_status = 'PAID';
+    else if (month < feeMonth) payment_status = 'NOT_DUE';
   }
 
-  const [profile] = await db
-    .select({ name: students.name, nickname: students.nickname, createdAt: students.createdAt })
-    .from(students)
-    .where(eq(students.id, s.id));
   const coach = hasClass ? await classCoach(db, s.classId!) : null;
-  const since = await enrolledSince(db, s.id, profile.createdAt);
-  const year = await yearRecord(db, s.id, schedules, today, since);
+  const year = await yearRecord(db, s.id, schedules, today, since, feeMonth);
 
   return {
     name: profile.name,
@@ -124,7 +127,7 @@ export async function studentDashboard(db: Db, actor: Actor, today: string) {
     meetings,
     payment_status,
     months: year,
-    unpaid_months: await unpaidMonths(db, s.id, since, today),
+    unpaid_months: await unpaidMonths(db, s.id, feeMonth, today),
   };
 }
 
@@ -151,17 +154,17 @@ function nextSession(schedules: ScheduleDTO[], today: string, holidays: Set<stri
 }
 
 /**
- * Month the student's record starts: the earliest of account creation, first attendance and
- * first payment (data entered for earlier months still counts).
+ * Month the student's record starts: the earliest of account creation, fee start, first attendance
+ * and first payment (data entered for earlier months still counts).
  */
-async function enrolledSince(db: Db, studentId: number, createdAt: string): Promise<string> {
+async function enrolledSince(db: Db, studentId: number, createdAt: string, feeStart: string | null): Promise<string> {
   const [a] = await db.select({ first: sql<string | null>`min(${attendances.date})` }).from(attendances).where(eq(attendances.studentId, studentId));
   const [p] = await db.select({ first: sql<string | null>`min(${payments.period})` }).from(payments).where(eq(payments.studentId, studentId));
-  const candidates = [monthKey(retiredOn(createdAt)!), a?.first && monthKey(String(a.first)), p?.first && monthKey(String(p.first))].filter(Boolean) as string[];
+  const candidates = [monthKey(retiredOn(createdAt)!), feeStart && monthKey(feeStart), a?.first && monthKey(String(a.first)), p?.first && monthKey(String(p.first))].filter(Boolean) as string[];
   return candidates.sort()[0];
 }
 
-/** Every month from enrolment up to the current one that is neither paid nor a holiday (oldest first). */
+/** Every month from the fee start up to the current one that is neither paid nor a holiday (oldest first). */
 async function unpaidMonths(db: Db, studentId: number, since: string, today: string): Promise<string[]> {
   const start = `${since}-01`;
   const holidays = new Set(await holidayMonthKeys(db, start, today));
@@ -181,11 +184,19 @@ export type MonthRecord = {
   /** null for months that have not started yet */
   attended: number | null;
   meetings: number | null;
-  payment: 'PAID' | 'UNPAID' | 'HOLIDAY' | 'UPCOMING' | 'NOT_ENROLLED';
+  /** NOT_DUE: enrolled, but before the month the fee starts. */
+  payment: 'PAID' | 'UNPAID' | 'HOLIDAY' | 'UPCOMING' | 'NOT_ENROLLED' | 'NOT_DUE';
 };
 
 /** January–December of today's year: sessions held vs attended (to date) and fee status per month. */
-async function yearRecord(db: Db, studentId: number, schedules: ScheduleDTO[], today: string, since: string): Promise<MonthRecord[]> {
+async function yearRecord(
+  db: Db,
+  studentId: number,
+  schedules: ScheduleDTO[],
+  today: string,
+  since: string,
+  feeMonth: string,
+): Promise<MonthRecord[]> {
   const y = today.slice(0, 4);
   const yearStart = `${y}-01-01`;
   const yearEnd = `${y}-12-31`;
@@ -211,7 +222,15 @@ async function yearRecord(db: Db, studentId: number, schedules: ScheduleDTO[], t
     const month = `${y}-${String(i + 1).padStart(2, '0')}`;
     if (month < since) return { month, attended: null, meetings: null, payment: 'NOT_ENROLLED' as const };
     const holiday = holidays.has(month);
-    const payment: MonthRecord['payment'] = holiday ? 'HOLIDAY' : paid.has(month) ? 'PAID' : month > current ? 'UPCOMING' : 'UNPAID';
+    const payment: MonthRecord['payment'] = holiday
+      ? 'HOLIDAY'
+      : paid.has(month)
+        ? 'PAID'
+        : month < feeMonth
+          ? 'NOT_DUE'
+          : month > current
+            ? 'UPCOMING'
+            : 'UNPAID';
     if (month > current) return { month, attended: null, meetings: null, payment };
     if (holiday) return { month, attended: 0, meetings: 0, payment };
     const end = month === current ? today : lastDay(month);

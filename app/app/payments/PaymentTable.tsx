@@ -19,6 +19,13 @@ const HolidayPill = () => (
     </span>
 );
 
+/** Before the student's fee start: nothing owed, nothing to tick (a month paid anyway still shows its tick). */
+const NotDuePill = () => (
+    <span className="inline-block px-2.5 py-1 text-sm font-bold text-slate-300" title="Belum mulai iuran">
+        –
+    </span>
+);
+
 const PaymentTable: React.FC<PaymentTableProps> = ({
     records,
     isMobile,
@@ -73,6 +80,8 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                                 <td key={month.period} className="px-3 py-4 text-center">
                                     {month.is_holiday ? (
                                         <HolidayPill />
+                                    ) : month.not_due && !month.is_paid ? (
+                                        <NotDuePill />
                                     ) : (
                                     <button
                                         onClick={() => onToggle(student.student_id, i)}
@@ -92,6 +101,8 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                             <td className="px-4 py-4 text-center">
                                 {student.months[selectedMonthIdx]?.is_holiday ? (
                                     <HolidayPill />
+                                ) : student.months[selectedMonthIdx]?.not_due && !student.months[selectedMonthIdx]?.is_paid ? (
+                                    <span className="text-xs font-bold text-slate-400">Belum mulai iuran</span>
                                 ) : (
                                 <button
                                     onClick={() => onToggle(student.student_id, selectedMonthIdx)}

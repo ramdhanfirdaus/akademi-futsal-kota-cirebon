@@ -50,6 +50,7 @@ export async function participantStats(db: Db, today: string, q: Record<string, 
           classId: academyStudents.classId,
           position: academyStudents.position,
           yearJoin: academyStudents.yearJoin,
+          feeStart: academyStudents.feeStart,
         })
         .from(students)
         .innerJoin(users, eq(users.id, students.userId))
@@ -99,6 +100,10 @@ export async function participantStats(db: Db, today: string, q: Record<string, 
     for (const r of rows) paidIds.add(r.studentId);
   }
   const className = new Map(classRows.map((c) => [c.id, c.name]));
+  // Students whose fee only starts after this month owe nothing yet.
+  const due = (s: (typeof roster)[number]) => monthKey(s.feeStart) <= month;
+  const unpaid = isHoliday ? [] : roster.filter((s) => !paidIds.has(s.id) && due(s));
+  const notDue = isHoliday ? 0 : roster.filter((s) => !paidIds.has(s.id) && !due(s)).length;
 
   // --- Composition ---
   const gender = { MALE: 0, FEMALE: 0, UNKNOWN: 0 };
@@ -122,7 +127,7 @@ export async function participantStats(db: Db, today: string, q: Record<string, 
     month,
     totals: { active: roster.length, new_this_year: roster.filter((s) => s.yearJoin === year).length, classes: classRows.length },
     attendance: { meetings: sum(meetings), attended: sum(attended), rate: pct(sum(attended), sum(meetings)) },
-    payments: { holiday: isHoliday, paid: isHoliday ? 0 : paidIds.size, unpaid: isHoliday ? 0 : roster.length - paidIds.size },
+    payments: { holiday: isHoliday, paid: isHoliday ? 0 : paidIds.size, unpaid: unpaid.length, not_due: notDue },
     by_class: classRows.map((c) => ({
       id: c.id,
       name: c.name,
@@ -134,9 +139,7 @@ export async function participantStats(db: Db, today: string, q: Record<string, 
     positions,
     age_groups: [...AGE_GROUPS.map((g) => ({ label: g.label, count: ageCounts.get(g.label)! })), { label: 'Belum diisi', count: noAge }],
     year_join: [...years.entries()].sort((a, b) => a[0] - b[0]).map(([y, count]) => ({ year: y, count })),
-    unpaid_students: isHoliday
-      ? []
-      : roster.filter((s) => !paidIds.has(s.id)).map((s) => ({ id: s.id, name: s.name, class: className.get(s.classId) ?? '' })),
+    unpaid_students: unpaid.map((s) => ({ id: s.id, name: s.name, class: className.get(s.classId) ?? '' })),
   };
 }
 

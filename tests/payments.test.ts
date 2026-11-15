@@ -54,7 +54,7 @@ describe('payments', () => {
   it('matrix has 12 months for a year and 1 with a month param', async () => {
     const [row] = await getPaymentMatrix(db, { class_id: String(classId), year: '2026' });
     expect(row.months).toHaveLength(12);
-    expect(row.months[0]).toEqual({ period: '2026-01', is_paid: false, is_holiday: false });
+    expect(row.months[0]).toEqual({ period: '2026-01', is_paid: false, is_holiday: false, not_due: false });
     const [one] = await getPaymentMatrix(db, { class_id: String(classId), year: '2026', month: '3' });
     expect(one.months.map((m) => m.period)).toEqual(['2026-03']);
   });
@@ -68,7 +68,7 @@ describe('payments', () => {
 
   it('holiday month is flagged and not stored', async () => {
     await createHoliday(db, { period: '2026-07' });
-    expect(await month('2026-07')).toEqual({ period: '2026-07', is_paid: false, is_holiday: true });
+    expect(await month('2026-07')).toEqual({ period: '2026-07', is_paid: false, is_holiday: true, not_due: false });
     await save([{ period: '2026-07', is_paid: true }]);
     expect(await db.select().from(payments)).toHaveLength(0);
   });

@@ -97,8 +97,12 @@ const StaffDashboard: React.FC = () => {
             <StatTile
               icon={<Wallet size={18} />}
               label="Iuran bulan ini"
-              value={stats.payments.holiday ? 'Libur' : `${stats.payments.paid}/${stats.totals.active}`}
-              note={stats.payments.holiday ? 'Tidak ada iuran bulan ini' : `${stats.payments.unpaid} siswa belum bayar`}
+              value={stats.payments.holiday ? 'Libur' : `${stats.payments.paid}/${stats.payments.paid + stats.payments.unpaid}`}
+              note={
+                stats.payments.holiday
+                  ? 'Tidak ada iuran bulan ini'
+                  : `${stats.payments.unpaid} siswa belum bayar${stats.payments.not_due ? `, ${stats.payments.not_due} belum mulai iuran` : ''}`
+              }
             />
           </div>
 

@@ -1,7 +1,7 @@
 import 'server-only';
 import { and, between, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { payments } from '../db/schema';
+import { academyStudents, payments } from '../db/schema';
 import type { Db } from '../db';
 import { monthKey, monthKeysBetween, resolveRange } from '@/lib/date';
 import { invalid } from '../errors';
@@ -26,7 +26,8 @@ const saveSchema = z.object({
   ),
 });
 
-export type PaymentMonth = { period: string; is_paid: boolean; is_holiday: boolean };
+/** not_due: the month is before the student's fee start, so nothing is owed (unless paid anyway). */
+export type PaymentMonth = { period: string; is_paid: boolean; is_holiday: boolean; not_due: boolean };
 
 export async function getPaymentMatrix(db: Db, q: Record<string, string | undefined>) {
   const { class_id: classId, year, month } = matrixQuery.parse(q);
@@ -36,7 +37,13 @@ export async function getPaymentMatrix(db: Db, q: Record<string, string | undefi
   const roster = await activeStudentsInClass(db, classId);
 
   const paid = new Set<string>();
+  const feeMonth = new Map<number, string>();
   if (roster.length) {
+    const starts = await db
+      .select({ studentId: academyStudents.studentId, feeStart: academyStudents.feeStart })
+      .from(academyStudents)
+      .where(inArray(academyStudents.studentId, roster.map((s) => s.id)));
+    for (const r of starts) feeMonth.set(r.studentId, monthKey(r.feeStart));
     const rows = await db
       .select({ studentId: payments.studentId, period: payments.period })
       .from(payments)
@@ -49,8 +56,8 @@ export async function getPaymentMatrix(db: Db, q: Record<string, string | undefi
     name: s.name,
     months: keys.map<PaymentMonth>((key) =>
       holidays.has(key)
-        ? { period: key, is_paid: false, is_holiday: true }
-        : { period: key, is_paid: paid.has(`${s.id}|${key}`), is_holiday: false },
+        ? { period: key, is_paid: false, is_holiday: true, not_due: false }
+        : { period: key, is_paid: paid.has(`${s.id}|${key}`), is_holiday: false, not_due: key < (feeMonth.get(s.id) ?? '') },
     ),
   }));
 }
