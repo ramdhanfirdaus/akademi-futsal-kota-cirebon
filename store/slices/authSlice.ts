@@ -55,7 +55,12 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.error = action.error.message ?? 'Login gagal';
       })
+      // Clear local state even if the request failed: the user asked to leave this device.
       .addCase(logout.fulfilled, (state) => {
+        state.user = null;
+        state.status = 'ready';
+      })
+      .addCase(logout.rejected, (state) => {
         state.user = null;
         state.status = 'ready';
       });

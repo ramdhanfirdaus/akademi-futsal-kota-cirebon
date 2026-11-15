@@ -6,7 +6,7 @@ import type { Db } from '../db';
 import { invalid, notFound } from '../errors';
 import { chunks, id, requiredDate } from '../validation';
 import { dayOfWeek, daysBetween, eachDate, isValidDate } from '@/lib/date';
-import { activeSchedulesForClass } from './classes';
+import { retiredOn, scheduleOn, schedulesSince } from './classes';
 import { activeStudentsInClass } from './students';
 
 export const MAX_RANGE_DAYS = 93;
@@ -41,12 +41,13 @@ export async function getAttendanceMatrix(db: Db, q: Record<string, string | und
   const [cls] = await db.select({ id: classes.id }).from(classes).where(and(eq(classes.id, classId), isNull(classes.deletedAt)));
   if (!cls) throw notFound();
 
-  const schedules = await activeSchedulesForClass(db, classId);
-  const byDay = new Map(schedules.map((s) => [s.day_of_week, s]));
+  // Includes retired schedules, so sessions held before a schedule changed keep their attendance.
+  const all = await schedulesSince(db, classId);
   const dates = eachDate(start, end).flatMap((date) => {
-    const s = byDay.get(dayOfWeek(date));
-    return s ? [{ date, class_schedule_id: s.id, start_time: s.start_time, end_time: s.end_time }] : [];
+    const s = scheduleOn(all, date);
+    return s ? [{ date, class_schedule_id: s.id, start_time: s.startTime, end_time: s.endTime }] : [];
   });
+  const schedules = [...new Set(dates.map((d) => d.class_schedule_id))].map((id) => ({ id }));
 
   const roster = await activeStudentsInClass(db, classId);
   const present = new Set<string>();
@@ -81,10 +82,10 @@ export async function saveAttendance(db: Db, input: unknown): Promise<void> {
 
   const scheduleIds = [...new Set(list.map((i) => i.class_schedule_id))];
   const schedules = await db
-    .select({ id: classSchedules.id, classId: classSchedules.classId, day: classSchedules.dayOfWeek })
+    .select({ id: classSchedules.id, classId: classSchedules.classId, day: classSchedules.dayOfWeek, deletedAt: classSchedules.deletedAt })
     .from(classSchedules)
     .innerJoin(classes, eq(classes.id, classSchedules.classId))
-    .where(and(inArray(classSchedules.id, scheduleIds), isNull(classSchedules.deletedAt), isNull(classes.deletedAt)));
+    .where(and(inArray(classSchedules.id, scheduleIds), isNull(classes.deletedAt)));
   const scheduleById = new Map(schedules.map((s) => [s.id, s]));
 
   const studentIds = [...new Set(list.map((i) => i.student_id))];
@@ -101,6 +102,7 @@ export async function saveAttendance(db: Db, input: unknown): Promise<void> {
     const schedule = scheduleById.get(item.class_schedule_id);
     if (!schedule) errors[`list.${i}`] = ['Jadwal tidak ditemukan'];
     else if (dayOfWeek(item.date) !== schedule.day) errors[`list.${i}`] = ['Tanggal tidak sesuai dengan hari jadwal'];
+    else if (schedule.deletedAt && item.date >= retiredOn(schedule.deletedAt)!) errors[`list.${i}`] = ['Jadwal sudah tidak berlaku pada tanggal ini'];
     else if (classOfStudent.get(item.student_id) !== schedule.classId) errors[`list.${i}`] = ['Siswa tidak terdaftar di kelas ini'];
   });
   if (Object.keys(errors).length) throw invalid(errors);

@@ -5,13 +5,13 @@ import { users } from '../db/schema';
 import type { Db } from '../db';
 import type { Actor } from '../auth';
 import { conflict, notFound } from '../errors';
-import { pageMeta, pageQuery } from '../validation';
+import { optPassword, pageMeta, pageQuery, password } from '../validation';
 import { createUser, deactivateUser, updateUser } from './users';
 
 const username = z.string().trim().regex(/^[a-z0-9._]{3,64}$/, 'Username 3-64 karakter: huruf kecil, angka, titik, garis bawah');
 
-const createSchema = z.object({ username, password: z.string().min(1) });
-const updateSchema = z.object({ username, password: z.string().nullable().optional() });
+const createSchema = z.object({ username, password });
+const updateSchema = z.object({ username, password: optPassword });
 
 const columns = { id: users.id, username: users.username, role: users.role, status: users.status, created_at: users.createdAt, updated_at: users.updatedAt };
 

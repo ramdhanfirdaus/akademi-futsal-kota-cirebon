@@ -58,7 +58,7 @@ npm run db:seed             # tanpa --demo untuk production
    Netlify mendeteksi Next.js otomatis (build `npm run build`, publish `.next`, sudah diatur di `netlify.toml`).
 3. **Site configuration → Environment variables**, tambahkan:
    - `DATABASE_URL` = connection string pooled dari Neon
-   - `JWT_SECRET` = string acak panjang (jangan sama dengan yang di lokal)
+   - `JWT_SECRET` = string acak minimal 32 karakter (jangan sama dengan yang di lokal; aplikasi menolak yang lebih pendek)
 4. **Deploy**. Setelah selesai, buka URL Netlify dan login dengan akun admin dari langkah 2.
 
 ### Batas paket gratis Netlify (perlu diperhatikan)
@@ -83,5 +83,6 @@ non-komersial.
 | COACH | siswa, kelas, absensi, pembayaran, bulan libur; hanya bisa mengubah akun pelatihnya sendiri |
 | STUDENT | dashboard pribadi (kelas, kehadiran & status iuran bulan ini) dan profil |
 
-Semua pengguna bisa mengganti password sendiri di menu **My Profile**.
+Semua pengguna bisa mengganti password sendiri di menu **My Profile**. Setelah password diganti (atau di-reset
+oleh admin/pelatih), semua sesi login di perangkat lain otomatis keluar.
 Menghapus siswa/pelatih menonaktifkan akunnya (data riwayat absensi & pembayaran tetap tersimpan).

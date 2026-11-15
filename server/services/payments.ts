@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { payments } from '../db/schema';
 import type { Db } from '../db';
 import { monthKey, monthKeysBetween, resolveRange } from '@/lib/date';
+import { invalid } from '../errors';
 import { chunks, id } from '../validation';
 import { holidayMonthKeys, periodSchema } from './holidays';
 import { activeStudentsInClass } from './students';
@@ -57,6 +58,13 @@ export async function getPaymentMatrix(db: Db, q: Record<string, string | undefi
 /** Holiday months are skipped; true inserts (idempotent), false deletes. */
 export async function savePayments(db: Db, input: unknown): Promise<void> {
   const d = saveSchema.parse(input);
+  const roster = new Set((await activeStudentsInClass(db, d.class_id)).map((s) => s.id));
+  const errors: Record<string, string[]> = {};
+  d.data.forEach((s, i) => {
+    if (!roster.has(s.student_id)) errors[`data.${i}.student_id`] = ['Siswa tidak terdaftar di kelas ini'];
+  });
+  if (Object.keys(errors).length) throw invalid(errors);
+
   const holidays = new Set(await holidayMonthKeys(db));
   const cells = d.data.flatMap((s) =>
     s.months.filter((m) => !holidays.has(monthKey(m.period))).map((m) => ({ studentId: s.student_id, period: m.period, paid: m.is_paid })),

@@ -1,9 +1,11 @@
 import 'server-only';
-import { eq, like } from 'drizzle-orm';
+import { eq, like, sql } from 'drizzle-orm';
+import type { PgUpdateSetSource } from 'drizzle-orm/pg-core';
 import { users } from '../db/schema';
 import type { Db } from '../db';
 import { hashPassword, type Role } from '../auth';
 import { nowIso } from '../validation';
+import { pgCode, pgConstraint } from '../http';
 
 /** A database handle or an open transaction. */
 export type Tx = Pick<Db, 'select' | 'insert' | 'update' | 'delete' | 'execute'>;
@@ -28,6 +30,21 @@ export async function generateUsername(tx: Tx, base: string): Promise<string> {
   }
 }
 
+/**
+ * Runs `fn` (a whole transaction that generates a username) again when a concurrent request
+ * took the same username between our SELECT and INSERT.
+ */
+export async function withUsernameRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
+  for (let i = 1; ; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const lostRace = pgCode(err) === '23505' && pgConstraint(err) === 'users_username_unique';
+      if (!lostRace || i >= attempts) throw err;
+    }
+  }
+}
+
 export async function createUser(tx: Tx, data: { username: string; password: string; role: Role }) {
   const [u] = await tx
     .insert(users)
@@ -38,9 +55,12 @@ export async function createUser(tx: Tx, data: { username: string; password: str
 
 /** Empty / missing password leaves the current one unchanged. */
 export async function updateUser(tx: Tx, userId: number, data: { username?: string | null; password?: string | null }) {
-  const set: Partial<typeof users.$inferInsert> = { updatedAt: nowIso() };
+  const set: PgUpdateSetSource<typeof users> = { updatedAt: nowIso() };
   if (data.username) set.username = data.username;
-  if (data.password) set.password = await hashPassword(data.password);
+  if (data.password) {
+    set.password = await hashPassword(data.password);
+    set.sessionVersion = sql`${users.sessionVersion} + 1`; // sign out every existing session
+  }
   await tx.update(users).set(set).where(eq(users.id, userId));
 }
 

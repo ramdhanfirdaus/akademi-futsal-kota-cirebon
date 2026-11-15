@@ -5,19 +5,19 @@ import { classes, coaches, users } from '../db/schema';
 import type { Db } from '../db';
 import type { Actor } from '../auth';
 import { forbidden, notFound } from '../errors';
-import { nowIso, optText, pageMeta, pageQuery } from '../validation';
-import { createUser, deactivateUser, generateUsername, slugBase, updateUser, type Tx } from './users';
+import { nowIso, optText, pageMeta, pageQuery, optPassword, password, reqText } from '../validation';
+import { createUser, deactivateUser, generateUsername, slugBase, updateUser, withUsernameRetry, type Tx } from './users';
 
 const createSchema = z.object({
-  password: z.string().min(1),
-  name: z.string().trim().min(1),
+  password,
+  name: reqText,
   nickname: optText,
 });
 
 const updateSchema = z.object({
   username: z.preprocess((v) => (v === '' ? undefined : v), z.string().trim().regex(/^[a-z0-9._]{3,64}$/).optional()),
-  password: z.string().nullable().optional(),
-  name: z.string().trim().min(1),
+  password: optPassword,
+  name: reqText,
   nickname: optText,
 });
 
@@ -91,13 +91,13 @@ export function getCoach(db: Db, _actor: Actor, coachId: number): Promise<CoachD
 
 export async function createCoach(db: Db, input: unknown): Promise<CoachDTO> {
   const d = createSchema.parse(input);
-  return db.transaction(async (tx) => {
+  return withUsernameRetry(() => db.transaction(async (tx) => {
     const source = d.nickname || d.name.split(/\s+/)[0];
     const username = await generateUsername(tx, slugBase(source, 'pelatih'));
     const user = await createUser(tx, { username, password: d.password, role: 'COACH' });
     const [c] = await tx.insert(coaches).values({ userId: user.id, name: d.name, nickname: d.nickname ?? null }).returning();
     return findCoach(tx, c.id);
-  });
+  }));
 }
 
 /** A coach may only edit their own record; admins may edit any. */

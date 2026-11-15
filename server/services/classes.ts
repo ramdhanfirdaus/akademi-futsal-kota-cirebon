@@ -5,6 +5,7 @@ import { academyStudents, classSchedules, classes, coaches, students, users } fr
 import type { Db } from '../db';
 import { conflict, invalid, notFound } from '../errors';
 import { id, nowIso } from '../validation';
+import { dayOfWeek, todayWIB } from '@/lib/date';
 import type { Tx } from './users';
 
 const time = z
@@ -52,6 +53,44 @@ export async function activeSchedulesForClass(db: Tx, classId: number): Promise<
   return rows.map(toScheduleDTO);
 }
 
+/** WIB calendar date a soft-deleted schedule was retired on (timestamps are stored as UTC wall time). */
+export function retiredOn(deletedAt: string | null): string | null {
+  if (!deletedAt) return null;
+  const iso = deletedAt.replace(' ', 'T');
+  return todayWIB(new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : `${iso}Z`));
+}
+
+export type ScheduleRow = typeof classSchedules.$inferSelect;
+
+/** Every schedule of a class, including retired ones. */
+export async function schedulesSince(db: Tx, classId: number): Promise<ScheduleRow[]> {
+  return db
+    .select()
+    .from(classSchedules)
+    .where(eq(classSchedules.classId, classId))
+    .orderBy(asc(classSchedules.dayOfWeek), asc(classSchedules.startTime));
+}
+
+/**
+ * The schedule that applied on `date`: a schedule retired after that date wins (it was the one
+ * in use then, so its attendance stays visible); otherwise the current schedule for that weekday.
+ */
+export function scheduleOn(schedules: ScheduleRow[], date: string): ScheduleRow | undefined {
+  const weekday = dayOfWeek(date);
+  let best: ScheduleRow | undefined;
+  let bestEnd = '';
+  for (const s of schedules) {
+    if (s.dayOfWeek !== weekday) continue;
+    const end = retiredOn(s.deletedAt) ?? '9999-12-31';
+    if (end <= date) continue;
+    if (!best || end < bestEnd) {
+      best = s;
+      bestEnd = end;
+    }
+  }
+  return best;
+}
+
 async function loadClasses(db: Tx, classId?: number): Promise<ClassDTO[]> {
   const rows = await db
     .select({ c: classes, coach: { id: coaches.id, name: coaches.name, nickname: coaches.nickname, username: users.username } })
@@ -91,6 +130,10 @@ export function listClasses(db: Db): Promise<ClassDTO[]> {
 
 async function validate(db: Tx, input: unknown) {
   const d = classSchema.parse(input);
+  const ids = d.schedules.flatMap((s) => (s.id ? [s.id] : []));
+  if (new Set(ids).size !== ids.length) {
+    throw invalid({ schedules: ['Jadwal yang sama tidak boleh dikirim dua kali'] });
+  }
   const days = d.schedules.map((s) => s.day_of_week);
   if (new Set(days).size !== days.length) {
     throw invalid({ schedules: ['Satu kelas tidak boleh punya dua jadwal di hari yang sama'] });
@@ -136,13 +179,17 @@ export async function updateClass(db: Db, classId: number, input: unknown): Prom
       }
     }
 
+    // A weekday change retires the old row and starts a new one, so past attendance keeps its weekday.
+    const dayOf = new Map(existing.map((s) => [s.id, s.day_of_week]));
+    const schedules = d.schedules.map((s) => (s.id && dayOf.get(s.id) !== s.day_of_week ? { ...s, id: undefined } : s));
+
     // Soft-delete removed schedules first so a re-added weekday never collides with the old row.
-    const keep = new Set(d.schedules.flatMap((s) => (s.id ? [s.id] : [])));
+    const keep = new Set(schedules.flatMap((s) => (s.id ? [s.id] : [])));
     const removed = existing.filter((s) => !keep.has(s.id)).map((s) => s.id);
     if (removed.length) {
       await tx.update(classSchedules).set({ deletedAt: nowIso(), updatedAt: nowIso() }).where(inArray(classSchedules.id, removed));
     }
-    for (const s of d.schedules) {
+    for (const s of schedules) {
       if (s.id) {
         await tx
           .update(classSchedules)

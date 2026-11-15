@@ -39,10 +39,25 @@ export function pgCode(err: unknown): string | undefined {
   return undefined;
 }
 
+/** Name of the violated constraint, looking through Drizzle's wrapped `cause` chain. */
+export function pgConstraint(err: unknown): string | undefined {
+  let e: unknown = err;
+  for (let i = 0; i < 4 && e && typeof e === 'object'; i++) {
+    const c = (e as { constraint?: unknown }).constraint;
+    if (typeof c === 'string') return c;
+    e = (e as { cause?: unknown }).cause;
+  }
+  return undefined;
+}
+
+const CONFLICT_MESSAGES: Record<string, string> = {
+  users_username_unique: 'Username sudah dipakai',
+};
+
 export function fail(err: unknown): Response {
   if (err instanceof AppError) return errorBody(err.status, err.message, err.errors);
   if (err instanceof ZodError) return errorBody(422, 'Validation failed', zodErrors(err));
-  if (pgCode(err) === '23505') return errorBody(409, 'Data sudah ada');
+  if (pgCode(err) === '23505') return errorBody(409, CONFLICT_MESSAGES[pgConstraint(err) ?? ''] ?? 'Data sudah ada');
   console.error(err);
   return errorBody(500, 'Internal Server Error');
 }

@@ -4,15 +4,13 @@ import { SignJWT } from 'jose';
 import { eq } from 'drizzle-orm';
 import { users } from './db/schema';
 import type { Db } from './db';
-import { SESSION_COOKIE, SESSION_MAX_AGE, verifySessionToken, type Role } from '@/lib/session';
+import { requireSecret, SESSION_COOKIE, SESSION_MAX_AGE, verifySessionToken, type Role } from '@/lib/session';
 
 export { SESSION_COOKIE, SESSION_MAX_AGE, type Role };
-export type Actor = { userId: number; role: Role; username: string };
+export type Actor = { userId: number; role: Role; username: string; sessionVersion?: number };
 
 function secret(): Uint8Array {
-  const s = process.env.JWT_SECRET;
-  if (!s) throw new Error('JWT_SECRET is not set');
-  return new TextEncoder().encode(s);
+  return new TextEncoder().encode(requireSecret(process.env.JWT_SECRET));
 }
 
 export function hashPassword(password: string): Promise<string> {
@@ -23,8 +21,8 @@ export function verifyPassword(password: string, hash: string): Promise<boolean>
   return bcrypt.compare(password, hash);
 }
 
-export function signSession(a: { userId: number; role: Role }): Promise<string> {
-  return new SignJWT({ role: a.role })
+export async function signSession(a: { userId: number; role: Role; sessionVersion?: number }): Promise<string> {
+  return new SignJWT({ role: a.role, ver: a.sessionVersion ?? 0 })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(String(a.userId))
     .setIssuedAt()
@@ -65,7 +63,12 @@ export function readSessionToken(req: Request): string | undefined {
   if (!header) return undefined;
   for (const part of header.split(';')) {
     const [k, ...v] = part.trim().split('=');
-    if (k === SESSION_COOKIE) return decodeURIComponent(v.join('='));
+    if (k !== SESSION_COOKIE) continue;
+    try {
+      return decodeURIComponent(v.join('='));
+    } catch {
+      return undefined; // malformed percent-encoding: treat as no session
+    }
   }
   return undefined;
 }
@@ -77,5 +80,7 @@ export async function loadActor(db: Db, token: string | undefined): Promise<Acto
   if (!session) return null;
   const [u] = await db.select().from(users).where(eq(users.id, session.userId));
   if (!u || u.status !== 'ACTIVE') return null;
-  return { userId: u.id, role: u.role, username: u.username };
+  // A password change/reset bumps the version, revoking every older session.
+  if (u.sessionVersion !== session.sessionVersion) return null;
+  return { userId: u.id, role: u.role, username: u.username, sessionVersion: u.sessionVersion };
 }

@@ -5,8 +5,8 @@ import { academyStudents, classes, students, users } from '../db/schema';
 import type { Db } from '../db';
 import type { Actor } from '../auth';
 import { forbidden, invalid, notFound } from '../errors';
-import { id, nowIso, optDate, optEnum, optText, pageMeta, pageQuery, yearJoin } from '../validation';
-import { createUser, deactivateUser, generateUsername, slugBase, updateUser, type Tx } from './users';
+import { id, nowIso, optDate, optEnum, optLongText, optStr, optText, pageMeta, pageQuery, optPassword, password, reqText, yearJoin } from '../validation';
+import { createUser, deactivateUser, generateUsername, slugBase, updateUser, withUsernameRetry, type Tx } from './users';
 
 const GENDERS = ['MALE', 'FEMALE'] as const;
 const BLOOD = ['A', 'B', 'AB', 'O'] as const;
@@ -16,11 +16,11 @@ const bio = {
   birth_place: optText,
   birth_date: optDate,
   gender: optEnum(GENDERS),
-  address: optText,
+  address: optLongText,
   parent_name: optText,
-  parent_phone: optText,
+  parent_phone: optStr(64),
   blood_type: optEnum(BLOOD),
-  disease_history: optText,
+  disease_history: optLongText,
 };
 
 const academy = {
@@ -31,17 +31,17 @@ const academy = {
 };
 
 const createSchema = z.object({
-  password: z.string().min(1),
-  name: z.string().trim().min(1),
-  nickname: z.string().trim().min(1),
+  password,
+  name: reqText,
+  nickname: reqText,
   ...bio,
   ...academy,
 });
 
 const staffUpdateSchema = z.object({
   username: z.preprocess((v) => (v === '' ? undefined : v), z.string().trim().regex(/^[a-z0-9._]{3,64}$/).optional()),
-  password: z.string().nullable().optional(),
-  name: z.string().trim().min(1),
+  password: optPassword,
+  name: reqText,
   nickname: optText,
   ...bio,
   ...academy,
@@ -162,7 +162,7 @@ export async function getStudent(db: Db, actor: Actor, studentId: number): Promi
 
 export async function createStudent(db: Db, input: unknown): Promise<StudentDTO> {
   const d = createSchema.parse(input);
-  return db.transaction(async (tx) => {
+  return withUsernameRetry(() => db.transaction(async (tx) => {
     await assertClassExists(tx, d.class_id);
     const username = await generateUsername(tx, slugBase(d.nickname, 'siswa'));
     const user = await createUser(tx, { username, password: d.password, role: 'STUDENT' });
@@ -178,7 +178,7 @@ export async function createStudent(db: Db, input: unknown): Promise<StudentDTO>
       isGoalkeeper: d.is_goalkeeper ?? false,
     });
     return findStudent(tx, s.id);
-  });
+  }));
 }
 
 export async function updateStudent(db: Db, actor: Actor, studentId: number, input: unknown): Promise<StudentDTO> {

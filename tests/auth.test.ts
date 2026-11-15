@@ -26,7 +26,7 @@ describe('password & session', () => {
 
   it('signs and verifies sessions', async () => {
     const token = await signSession({ userId: 5, role: 'COACH' });
-    expect(await verifySession(token)).toEqual({ userId: 5, role: 'COACH' });
+    expect(await verifySession(token)).toEqual({ userId: 5, role: 'COACH', sessionVersion: 0 });
     expect(await verifySession(token.slice(0, -2) + 'xx')).toBeNull();
     expect(await verifySession('garbage')).toBeNull();
   });

@@ -5,7 +5,20 @@ import { isValidDate } from '@/lib/date';
 /** Treats '' / null / undefined from HTML forms as "no value". */
 const blank = (v: unknown) => (v === '' || v === undefined ? null : v);
 
-export const optText = z.preprocess(blank, z.string().trim().nullable()).optional();
+/** Optional free text, capped so over-long input is a 422 rather than a database error. */
+export const optStr = (max: number) =>
+  z.preprocess(blank, z.string().trim().max(max, `Maksimal ${max} karakter`).nullable()).optional();
+export const optText = optStr(255);
+export const optLongText = optStr(2000);
+
+/** Required single-line text matching a varchar(255) column. */
+export const reqText = z.string().trim().min(1).max(255, 'Maksimal 255 karakter');
+
+/** bcrypt only uses the first 72 bytes, so longer passwords would be silently truncated. */
+export const password = z.string().min(1).max(72, 'Password maksimal 72 karakter');
+
+/** On update forms an empty password means "keep the current one". */
+export const optPassword = z.preprocess(blank, password.nullable()).optional();
 
 export const optDate = z
   .preprocess(blank, z.string().refine((s) => isValidDate(s.slice(0, 10)), 'Tanggal tidak valid').transform((s) => s.slice(0, 10)).nullable())

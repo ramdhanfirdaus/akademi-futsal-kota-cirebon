@@ -30,6 +30,8 @@ export const users = pgTable('users', {
   password: text('password').notNull(),
   role: roleEnum('role').notNull(),
   status: userStatusEnum('status').notNull().default('ACTIVE'),
+  /** Bumped on password change/reset; sessions signed with an older value stop working. */
+  sessionVersion: integer('session_version').notNull().default(0),
   ...timestamps,
 });
 
@@ -37,6 +39,7 @@ export const students = pgTable('students', {
   id: serial('id').primaryKey(),
   userId: integer('user_id')
     .notNull()
+    .unique()
     .references(() => users.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   nickname: varchar('nickname', { length: 255 }),
@@ -55,6 +58,7 @@ export const coaches = pgTable('coaches', {
   id: serial('id').primaryKey(),
   userId: integer('user_id')
     .notNull()
+    .unique()
     .references(() => users.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   nickname: varchar('nickname', { length: 255 }),
