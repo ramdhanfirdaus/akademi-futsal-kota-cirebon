@@ -66,7 +66,8 @@ Remove-Item Env:DATABASE_URL, Env:SEED_ADMIN_USERNAME, Env:SEED_ADMIN_PASSWORD
 ### A3. Pasang Netlify CLI dan login
 
 ```powershell
-npm install -g netlify-cli
+npm install -g netlify-cli@latest
+netlify --version   # harus 27.x atau lebih baru
 netlify login
 ```
 
@@ -95,13 +96,19 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 Masukkan ke Netlify bersama **pooled URL** dari Neon:
 
 ```powershell
-netlify env:set DATABASE_URL "postgresql://...POOLED-URL-dengan--pooler...?sslmode=require" --secret
-netlify env:set JWT_SECRET "hasil-perintah-di-atas" --secret
+netlify env:set DATABASE_URL "postgresql://...POOLED-URL-dengan--pooler...?sslmode=verify-full&channel_binding=require"
+netlify env:set JWT_SECRET "hasil-perintah-di-atas"
 netlify env:list
 ```
 
-`--secret` membuat nilainya tidak bisa dibaca lagi di dashboard. Kalau perlu mengganti nilainya, jalankan
-ulang `env:set`.
+- Tanpa `--context`, variabel berlaku di semua context (draft maupun production). Kalau perlu mengganti
+  nilainya, jalankan ulang `env:set`.
+- Ganti `sslmode=require` dari Neon menjadi `sslmode=verify-full`. Artinya sama, tapi tidak memunculkan
+  peringatan dan tetap aman di versi `pg` berikutnya.
+- Jangan pakai `--secret` di sini: Netlify menolak secret tanpa `--context`, dan secret tidak tersedia di
+  context `dev` yang dipakai `netlify deploy` (draft) secara default.
+- Pastikan Netlify CLI versi terbaru (`netlify --version` minimal 27). Versi lama tidak mengenal sebagian
+  perintah di panduan ini; perbarui dengan `npm install -g netlify-cli@latest`.
 
 ---
 
