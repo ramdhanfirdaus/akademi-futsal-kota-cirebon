@@ -83,10 +83,9 @@ export default function StudentForm({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormInput
                         label="Username"
-                        required
                         disabled
-                        value={student.username || ""}
-                        onChange={(v) => handleChange("username", v.target.value)}
+                        value={student.username || "(dibuat otomatis)"}
+                        onChange={() => {}}
                     />
 
                     <FormInput

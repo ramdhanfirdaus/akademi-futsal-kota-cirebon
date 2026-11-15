@@ -6,14 +6,14 @@ class ClassService {
         return await api.get("/classes");
     }
 
-    async createClass(payload: Partial<Class>): Promise<void> {
+    async createClass(payload: Partial<Class>): Promise<Class> {
         const response = await api.post("/classes", payload);
-        return response.data.data;
+        return (response as unknown as ApiResponse<Class>).data;
     }
 
-    async updateClass(id: number, payload: Partial<Class>): Promise<void> {
+    async updateClass(id: number, payload: Partial<Class>): Promise<Class> {
         const response = await api.put(`/classes/${id}`, payload);
-        return response.data.data;
+        return (response as unknown as ApiResponse<Class>).data;
     }
 
     async deleteClass(id: number): Promise<void> {

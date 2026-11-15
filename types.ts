@@ -187,6 +187,7 @@ export interface ApiResponse<T> {
 export interface PaymentMonth {
   period: string;
   is_paid: boolean;
+  is_holiday: boolean;
 }
 
 export interface PaymentStudent {
@@ -215,4 +216,26 @@ export interface OcallNotificationParams {
   type: NotificationType;
   message: string;
   duration?: number;
+}
+
+export interface DashboardSummary {
+  total_students: number;
+  total_coaches: number;
+  total_classes: number;
+  average_attendance: number;
+}
+
+export interface StudentDashboard {
+  class: { id: number; name: string } | null;
+  schedules: Schedule[];
+  month: string;
+  attended: number;
+  meetings: number;
+  payment_status: 'PAID' | 'UNPAID' | 'HOLIDAY';
+}
+
+export interface HolidayPeriod {
+  id: number;
+  /** YYYY-MM-01 */
+  period: string;
 }

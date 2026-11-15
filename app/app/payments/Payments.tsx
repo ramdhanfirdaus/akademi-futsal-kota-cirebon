@@ -12,6 +12,7 @@ import { getYearOptions, MONTH_OPTIONS } from "@/constants.tsx";
 import PaymentTable from "@/app/app/payments/PaymentTable.tsx";
 import { AppHeader, BaseButton, SelectInput, useNotification } from "@/components";
 import { ClassService, PaymentService } from "@/services";
+import { apiErrorMessage } from '@/services/errors';
 
 const Payments: React.FC = () => {
   const { showNotification } = useNotification();
@@ -20,7 +21,7 @@ const Payments: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [records, setRecords] = useState<PaymentStudent[]>([]);
   const [selectedMonthIdx, setSelectedMonthIdx] = useState(new Date().getMonth());
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const yearOptions = getYearOptions();
@@ -34,7 +35,7 @@ const Payments: React.FC = () => {
       const res = await ClassService.getClasses();
       setClasses(res.data);
     } catch (error) {
-      showNotification({ type: 'error', message: error.message })
+      showNotification({ type: 'error', message: apiErrorMessage(error) })
     }
   }, []);
 
@@ -50,7 +51,7 @@ const Payments: React.FC = () => {
       const res = await PaymentService.getPayments(selectedClassId, selectedYear);
       setRecords(res.data);
     } catch (error) {
-      showNotification({ type: 'error', message: error.message })
+      showNotification({ type: 'error', message: apiErrorMessage(error) })
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +59,7 @@ const Payments: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -68,7 +70,7 @@ const Payments: React.FC = () => {
         if (student.student_id !== studentId) return student;
 
         const updatedMonths = student.months.map((m, i) =>
-          i === monthIndex
+          i === monthIndex && !m.is_holiday
             ? { ...m, is_paid: !m.is_paid }
             : m
         );
@@ -86,7 +88,7 @@ const Payments: React.FC = () => {
       await PaymentService.savePayments(selectedClassId, selectedYear, records);
       showNotification({ type: 'success', message: 'Berhasil menyimpan perubahan pembayaran' })
     } catch (error) {
-      showNotification({ type: 'error', message: 'Gagal menyimpan perubahan pembayaran' })
+      showNotification({ type: 'error', message: apiErrorMessage(error, 'Gagal menyimpan perubahan pembayaran') })
     } finally {
       setIsSubmitting(false);
     }
@@ -103,7 +105,7 @@ const Payments: React.FC = () => {
               label: "Simpan Perubahan",
               icon: Save,
               onClick: handleSave,
-              disabled: isSubmitting || !records
+              disabled: isSubmitting || records.length === 0
             },
           ]}
       />
@@ -169,6 +171,9 @@ const Payments: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase">
             <div className="w-2.5 h-2.5 rounded-full bg-slate-200"></div> Belum
+          </div>
+          <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase">
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div> Libur
           </div>
         </div>
       </div>

@@ -19,6 +19,8 @@ import {
   DateInput
 } from "@/components";
 import { ClassService, AttendanceService } from "@/services";
+import { apiErrorMessage } from '@/services/errors';
+import { addDays, todayWIB } from '@/lib/date';
 
 const App: React.FC = () => {
   const { showNotification } = useNotification();
@@ -33,19 +35,17 @@ const App: React.FC = () => {
   }));
 
   // Date range state
-  const today = new Date();
-  const weekAgo = new Date(today);
-  weekAgo.setDate(today.getDate() - 6);
+  const today = todayWIB();
 
-  const [startDate, setStartDate] = useState(weekAgo.toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(today.toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(addDays(today, -6));
+  const [endDate, setEndDate] = useState(today);
 
   const fetchClasses = useCallback(async () => {
     try {
       const res = await ClassService.getClasses();
       setClasses(res.data);
     } catch (error) {
-      showNotification({ type: 'error', message: error.message })
+      showNotification({ type: 'error', message: apiErrorMessage(error) })
     }
   }, []);
 
@@ -54,15 +54,9 @@ const App: React.FC = () => {
     setIsLoading(true);
     try {
       const res = await AttendanceService.getAttendances(selectedClassId, startDate, endDate);
-      const raw = res.data;
-      const attendanceData: Attendance = {
-        ...raw,
-        dates: Object.values(raw.dates)
-      };
-
-      setAttendanceData(attendanceData);
+      setAttendanceData(res.data);
     } catch (error) {
-      showNotification({ type: 'error', message: error.message })
+      showNotification({ type: 'error', message: apiErrorMessage(error) })
     } finally {
       setIsLoading(false);
     }
@@ -114,7 +108,7 @@ const App: React.FC = () => {
       await AttendanceService.saveAttendances(list)
       showNotification({ type: 'success', message: 'Absensi berhasil disimpan' })
     } catch (error) {
-      showNotification({ type: 'error', message: 'Gagal menyimpan absensi' })
+      showNotification({ type: 'error', message: apiErrorMessage(error, 'Gagal menyimpan absensi') })
     } finally {
       setIsSubmitting(false);
     }
@@ -200,13 +194,6 @@ const App: React.FC = () => {
 
           {/* Main Grid Card */}
           <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden relative">
-            {isLoading && (
-                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-100">
-                  <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent animate-spin rounded-full mb-3"></div>
-                  <p className="text-slate-400 font-bold text-sm">Memuat data kelas...</p>
-                </div>
-            )}
-
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-100">
                 <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent animate-spin rounded-full mb-3"></div>
@@ -231,13 +218,13 @@ const App: React.FC = () => {
                         </div>
                       </th>
                       {attendanceData?.dates.map(date => {
-                        const d = new Date(date.date);
+                        const d = new Date(`${date.date}T00:00:00`);
                         const dayName = d.toLocaleDateString('id-ID', { weekday: 'short' });
                         const dayNum = d.getDate();
-                        const isToday = date.date === today.toISOString().split('T')[0];
+                        const isToday = date.date === today;
 
                         return (
-                            <th key={date.class_schedule_id} className={`px-4 py-5 min-w-[100px] text-center border-l border-slate-100 ${isToday ? 'bg-blue-50/50' : ''}`}>
+                            <th key={date.date} className={`px-4 py-5 min-w-[100px] text-center border-l border-slate-100 ${isToday ? 'bg-blue-50/50' : ''}`}>
                               <div className="flex flex-col">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{dayName}</span>
                                 <span className={`text-lg font-black ${isToday ? 'text-blue-600' : 'text-slate-700'}`}>{dayNum}</span>
@@ -258,7 +245,7 @@ const App: React.FC = () => {
                               </div>
                             </td>
                             {attendanceData?.dates.map(date => (
-                                <td key={date.class_schedule_id} className="px-4 py-4 text-center border-l border-slate-50">
+                                <td key={date.date} className="px-4 py-4 text-center border-l border-slate-50">
                                   <button
                                       onClick={() => toggleAttendance(student.student_id, date.date)}
                                       className={`

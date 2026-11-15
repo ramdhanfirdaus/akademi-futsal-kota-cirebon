@@ -145,7 +145,7 @@ export default function StudentDetail({
                                 <InfoField
                                     icon={Calendar}
                                     label="Joined Academy"
-                                    value={student.academy_students?.year_join.toString() || "-"}
+                                    value={student.academy_students?.year_join?.toString() || "-"}
                                 />
                                 <InfoField
                                     icon={Activity}

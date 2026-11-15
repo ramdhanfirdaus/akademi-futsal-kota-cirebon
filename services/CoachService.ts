@@ -14,12 +14,12 @@ class CoachService {
 
     async createCoach(payload: Partial<Coach>): Promise<Coach> {
         const response = await api.post("/coaches", payload);
-        return response.data.data;
+        return (response as unknown as ApiResponse<Coach>).data;
     }
 
     async updateCoach(id: string, payload: Partial<Coach>): Promise<Coach> {
         const response = await api.put(`/coaches/${id}`, payload);
-        return response.data.data;
+        return (response as unknown as ApiResponse<Coach>).data;
     }
 
     async deleteCoach(id: string): Promise<void> {

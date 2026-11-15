@@ -7,7 +7,8 @@ import {
   CalendarDays, 
   CreditCard, 
   School,
-  UserCircle
+  UserCircle,
+  CalendarOff
 } from 'lucide-react';
 import {NotificationType} from "@/types.ts";
 
@@ -21,6 +22,7 @@ export const NAVIGATION_ITEMS = [
   { id: 'classes', label: 'Class', icon: <School size={20} />, roles: ['ADMIN', 'COACH'] },
   { id: 'attendance', label: 'Attendance', icon: <CalendarCheck size={20} />, roles: ['ADMIN', 'COACH'] },
   { id: 'payments', label: 'Payments', icon: <CreditCard size={20} />, roles: ['ADMIN', 'COACH'] },
+  { id: 'holidays', label: 'Bulan Libur', icon: <CalendarOff size={20} />, roles: ['ADMIN', 'COACH'] },
   { id: 'profile', label: 'My Profile', icon: <UserCircle size={20} />, roles: ['ADMIN', 'COACH', 'STUDENT'] },
 ];
 

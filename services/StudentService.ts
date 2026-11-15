@@ -10,12 +10,12 @@ class StudentService {
 
     async createStudent(payload: Partial<Student>): Promise<Student> {
         const response = await api.post("/students", payload);
-        return response.data.data;
+        return (response as unknown as ApiResponse<Student>).data;
     }
 
     async updateStudent(id: string, payload: Partial<Student>): Promise<Student> {
         const response = await api.put(`/students/${id}`, payload);
-        return response.data.data;
+        return (response as unknown as ApiResponse<Student>).data;
     }
 
     async deleteStudent(id: string): Promise<void> {

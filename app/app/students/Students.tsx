@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '@/services/errors';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     Search,
@@ -68,25 +69,14 @@ const Students: React.FC = () => {
         label: cls.name
     }));
 
-    useEffect(() => {
-        if (editingStudent?.nickname && !editingStudent?.id) {
-            const username = `${editingStudent.nickname.toLowerCase()}0${students.length + 1}`;
-
-            setEditingStudent(prev => ({
-                ...prev,
-                username,
-            }));
-        }
-    }, [editingStudent?.nickname]);
-
     const fetchStudents = useCallback(async (currentFilters: StudentFilters) => {
         setIsLoading(true);
         try {
             const response: ApiResponse<Student[]> = await StudentService.getStudents(currentFilters);
             setStudents(response.data);
-            setPagination(response.meta);
+            if (response.meta) setPagination(response.meta);
         } catch (e) {
-            showNotification({ type: 'error', message: e.message })
+            showNotification({ type: 'error', message: apiErrorMessage(e) })
         } finally {
             setIsLoading(false);
         }
@@ -102,7 +92,7 @@ const Students: React.FC = () => {
             const response = await ClassService.getClasses();
             setClasses(response.data);
         } catch (e) {
-            showNotification({ type: 'error', message: e.message })
+            showNotification({ type: 'error', message: apiErrorMessage(e) })
         } finally {
             setIsLoading(false);
         }
@@ -141,7 +131,7 @@ const Students: React.FC = () => {
             if (selectedStudent?.id === deleteTarget.id) setSelectedStudent(null);
             setDeleteTarget(null);
         } catch (e) {
-            showNotification({ type: 'error', message: e.message })
+            showNotification({ type: 'error', message: apiErrorMessage(e) })
         } finally {
             setIsDeleting(false);
         }
@@ -164,7 +154,7 @@ const Students: React.FC = () => {
             setEditingStudent(null);
             fetchStudents(filters);
         } catch (e: any) {
-            showNotification({ type: 'error', message: e.message })
+            showNotification({ type: 'error', message: apiErrorMessage(e) })
         } finally {
             setIsSaving(false);
         }
@@ -297,7 +287,7 @@ const Students: React.FC = () => {
                                                 title={student.birth_date ? `${getAge(student.birth_date)} Tahun` : '-'}/>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <Badge title={`Kelas ${student.academy_students.class.name}`}/>
+                                            <Badge title={`Kelas ${student.academy_students?.class?.name ?? '-'}`}/>
                                         </td>
                                         <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
                                             <div className="flex items-center justify-center gap-1.5">
@@ -353,7 +343,7 @@ const Students: React.FC = () => {
                 <DataTableFooter
                     entityName="Siswa"
                     page={pagination.page}
-                    lastPage={filters.page}
+                    lastPage={pagination.last_page}
                     total={pagination.total}
                     limit={filters.limit}
                     onPageChange={(page) => setFilters(f => ({...f, page}))}

@@ -27,7 +27,7 @@ export default function StudentCard({
                 <div className="flex-1 overflow-hidden">
                     <h4 className="font-bold text-slate-800 truncate text-sm">{student.name}</h4>
                     <p className="text-xs text-slate-400 truncate">{student.nickname} •
-                        Kelas {student.academy_students.class.name}</p>
+                        Kelas {student.academy_students?.class?.name ?? '-'}</p>
                 </div>
                 <ChevronRight size={16} className="text-slate-300"/>
             </div>

@@ -50,10 +50,9 @@ export default function CoachForm({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormInput
                         label="Username"
-                        required
                         disabled
-                        value={coach.username || ""}
-                        onChange={(v) => handleChange("username", v.target.value)}
+                        value={coach.username || "(dibuat otomatis)"}
+                        onChange={() => {}}
                     />
 
                     <FormInput

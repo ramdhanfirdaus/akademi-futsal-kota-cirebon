@@ -13,6 +13,12 @@ interface PaymentTableProps {
     isLoading: boolean;
 }
 
+const HolidayPill = () => (
+    <span className="inline-block px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-wider" title="Bulan libur — tidak ada iuran">
+        Libur
+    </span>
+);
+
 const PaymentTable: React.FC<PaymentTableProps> = ({
     records,
     isMobile,
@@ -65,6 +71,9 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                         {!isMobile ? (
                             student.months.map((month, i) => (
                                 <td key={month.period} className="px-3 py-4 text-center">
+                                    {month.is_holiday ? (
+                                        <HolidayPill />
+                                    ) : (
                                     <button
                                         onClick={() => onToggle(student.student_id, i)}
                                         className={`p-1.5 rounded-full transition-all hover:scale-110 active:scale-95 ${
@@ -76,10 +85,14 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                                     >
                                         {month.is_paid ? <CheckCircle2 size={22} /> : <Circle size={22} />}
                                     </button>
+                                    )}
                                 </td>
                             ))
                         ) : (
                             <td className="px-4 py-4 text-center">
+                                {student.months[selectedMonthIdx]?.is_holiday ? (
+                                    <HolidayPill />
+                                ) : (
                                 <button
                                     onClick={() => onToggle(student.student_id, selectedMonthIdx)}
                                     className={`p-2 rounded-xl transition-all ${
@@ -98,6 +111,7 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                                         </div>
                                     )}
                                 </button>
+                                )}
                             </td>
                         )}
                     </tr>

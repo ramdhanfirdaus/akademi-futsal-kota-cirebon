@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '@/services/errors';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     Search,
@@ -48,25 +49,14 @@ const Coaches: React.FC = () => {
         total: 0
     });
 
-    useEffect(() => {
-        if (editingCoach?.nickname && !editingCoach?.id) {
-            const username = `${editingCoach.nickname.toLowerCase()}0${coaches.length + 1}`;
-
-            setEditingCoach(prev => ({
-                ...prev,
-                username,
-            }));
-        }
-    }, [editingCoach?.nickname]);
-
     const fetchCoaches = useCallback(async (currentFilters: CoachFilters) => {
         setIsLoading(true);
         try {
             const response: ApiResponse<Coach[]> = await CoachService.getCoaches(currentFilters);
             setCoaches(response.data);
-            setPagination(response.meta);
+            if (response.meta) setPagination(response.meta);
         } catch (e) {
-            showNotification({ type: 'error', message: e.message })
+            showNotification({ type: 'error', message: apiErrorMessage(e) })
         } finally {
             setIsLoading(false);
         }
@@ -104,7 +94,7 @@ const Coaches: React.FC = () => {
             fetchCoaches(filters);
             setDeleteTarget(null);
         } catch (e: any) {
-            showNotification({ type: 'error', message: e.message });
+            showNotification({ type: 'error', message: apiErrorMessage(e) });
         } finally {
             setIsDeleting(false);
         }
@@ -129,7 +119,7 @@ const Coaches: React.FC = () => {
             setEditingCoach(null);
             fetchCoaches(filters);
         } catch (e: any) {
-            showNotification({ type: 'error', message: e.message })
+            showNotification({ type: 'error', message: apiErrorMessage(e) })
         } finally {
             setIsSaving(false);
         }
@@ -295,7 +285,7 @@ const Coaches: React.FC = () => {
                 <DataTableFooter
                     entityName="Pelatih"
                     page={pagination.page}
-                    lastPage={filters.page}
+                    lastPage={pagination.last_page}
                     total={pagination.total}
                     limit={filters.limit}
                     onPageChange={(page) => setFilters(f => ({...f, page}))}

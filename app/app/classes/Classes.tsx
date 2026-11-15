@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '@/services/errors';
 import React, {useState, useEffect, useCallback} from 'react';
 import { Trash2, X, Plus } from 'lucide-react';
 import { ApiResponse, Class, Coach, Schedule } from '@/types.ts';
@@ -21,7 +22,7 @@ const Classes: React.FC = () => {
             const response: ApiResponse<Class[]> = await ClassService.getClasses();
             setClasses(response.data);
         } catch (e) {
-            showNotification({ type: 'error', message: e.message })
+            showNotification({ type: 'error', message: apiErrorMessage(e) })
         } finally {
             setIsLoading(false);
         }
@@ -32,7 +33,7 @@ const Classes: React.FC = () => {
             const response: ApiResponse<Coach[]> = await CoachService.getAllCoaches();
             setCoaches(response.data);
         } catch (e) {
-            showNotification({ type: 'error', message: e.message })
+            showNotification({ type: 'error', message: apiErrorMessage(e) })
         }
     }, []);
 
@@ -48,8 +49,10 @@ const Classes: React.FC = () => {
         if (window.confirm(`Hapus Kelas ${name}?`)) {
             try {
                 await ClassService.deleteClass(id);
+                showNotification({ type: 'success', message: 'Kelas berhasil dihapus' });
+                fetchClasses();
             } catch (e) {
-                showNotification({ type: 'error', message: e.message || 'Gagal menghapus kelas' })
+                showNotification({ type: 'error', message: apiErrorMessage(e, 'Gagal menghapus kelas') })
             }
         }
     };
@@ -95,7 +98,7 @@ const Classes: React.FC = () => {
             setEditingClass(null);
             fetchClasses();
         } catch (e: any) {
-            showNotification({ type: 'error', message: e.message || 'Gagal menyimpan kelas' })
+            showNotification({ type: 'error', message: apiErrorMessage(e, 'Gagal menyimpan kelas') })
         } finally {
             setIsSaving(false);
         }
