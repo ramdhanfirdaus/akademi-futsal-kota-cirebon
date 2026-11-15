@@ -9,7 +9,8 @@ import {
   School,
   UserCircle,
   CalendarOff,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Images
 } from 'lucide-react';
 import {NotificationType} from "@/types.ts";
 
@@ -28,6 +29,7 @@ export const NAVIGATION_ITEMS = [
   { id: 'classes', label: 'Kelas', icon: <School size={20} />, roles: ['ADMIN', 'COACH'], primary: false },
   { id: 'class-board', label: 'Pindah Kelas', icon: <ArrowLeftRight size={20} />, roles: ['ADMIN', 'COACH'], primary: false },
   { id: 'coaches', label: 'Pelatih', icon: <UserSquare2 size={20} />, roles: ['ADMIN'], primary: false },
+  { id: 'gallery', label: 'Galeri', icon: <Images size={20} />, roles: ['ADMIN'], primary: false },
   { id: 'holidays', label: 'Bulan Libur', icon: <CalendarOff size={20} />, roles: ['ADMIN', 'COACH'], primary: false },
   { id: 'profile', label: 'Profil Saya', icon: <UserCircle size={20} />, roles: ['ADMIN', 'COACH', 'STUDENT'], primary: false },
 ];

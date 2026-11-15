@@ -5,28 +5,15 @@ import { classes, coaches, users } from '../db/schema';
 import type { Db } from '../db';
 import type { Actor } from '../auth';
 import { forbidden, notFound } from '../errors';
-import { nowIso, optLongText, optText, pageMeta, pageQuery, optPassword, password, reqText } from '../validation';
+import { imageData, nowIso, optLongText, optText, pageMeta, pageQuery, optPassword, password, reqText } from '../validation';
 import { createUser, deactivateUser, generateUsername, slugBase, updateUser, withUsernameRetry, type Tx } from './users';
 
 const activeUser = eq(users.status, 'ACTIVE');
 
 export const MAX_PHOTO_BYTES = 500 * 1024;
-const PHOTO_RE = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$/;
 
 /** A data URL sets the photo, null removes it, omitted keeps the current one. */
-const photoInput = z
-  .union([
-    z.null(),
-    z
-      .string()
-      .regex(PHOTO_RE, 'Foto harus berupa gambar JPG, PNG, atau WebP')
-      .transform((s) => {
-        const [, type, b64] = PHOTO_RE.exec(s)!;
-        return { type, bytes: Buffer.from(b64, 'base64') };
-      })
-      .refine((p) => p.bytes.length <= MAX_PHOTO_BYTES, `Ukuran foto maksimal ${MAX_PHOTO_BYTES / 1024} KB`),
-  ])
-  .optional();
+const photoInput = z.union([z.null(), imageData(MAX_PHOTO_BYTES)]).optional();
 
 const certificationsInput = z
   .array(z.string().trim().max(255, 'Maksimal 255 karakter'))

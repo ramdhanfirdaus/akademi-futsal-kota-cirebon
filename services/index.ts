@@ -7,3 +7,4 @@ export { default as StudentService } from './StudentService';
 export { default as HolidayService } from './HolidayService';
 export { default as ProfileService } from './ProfileService';
 export { default as ClassBoardService } from './ClassBoardService';
+export { default as GalleryService } from './GalleryService';

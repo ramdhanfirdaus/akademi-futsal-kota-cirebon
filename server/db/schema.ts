@@ -154,3 +154,12 @@ export const holidayPeriods = pgTable('holiday_periods', {
   period: date('period', { mode: 'string' }).notNull().unique(),
   ...timestamps,
 });
+
+/** Photos for the public landing page's gallery, uploaded by admins (resized in the browser). */
+export const galleryPhotos = pgTable('gallery_photos', {
+  id: serial('id').primaryKey(),
+  caption: varchar('caption', { length: 255 }),
+  photo: bytea('photo').notNull(),
+  photoType: varchar('photo_type', { length: 32 }).notNull(),
+  ...timestamps,
+});

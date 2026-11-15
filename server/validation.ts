@@ -68,3 +68,16 @@ export function chunks<T>(rows: T[], size = 1000): T[][] {
   for (let i = 0; i < rows.length; i += size) out.push(rows.slice(i, i + size));
   return out;
 }
+
+const IMAGE_RE = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$/;
+
+/** A base64 image data URL (JPEG/PNG/WebP) up to `maxBytes`, decoded to bytes. */
+export const imageData = (maxBytes: number) =>
+  z
+    .string()
+    .regex(IMAGE_RE, 'Foto harus berupa gambar JPG, PNG, atau WebP')
+    .transform((s) => {
+      const [, type, b64] = IMAGE_RE.exec(s)!;
+      return { type, bytes: Buffer.from(b64, 'base64') };
+    })
+    .refine((p) => p.bytes.length <= maxBytes, `Ukuran foto maksimal ${Math.round(maxBytes / 1024)} KB`);

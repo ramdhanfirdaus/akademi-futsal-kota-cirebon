@@ -34,9 +34,22 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
     <aside
       className={`fixed inset-y-0 left-0 z-40 hidden flex-col bg-laut-dalam text-white/80 transition-[width] duration-200 md:flex ${collapsed ? 'w-20' : 'w-64'}`}
     >
-      <div className={`flex h-16 items-center gap-3 border-b border-white/10 ${collapsed ? 'justify-center px-2' : 'px-5'}`}>
-        <img src="/logo.png" alt="" className="h-9 w-9 shrink-0" />
-        {!collapsed && <span className="font-display text-2xl font-black tracking-wide text-white">AFKC</span>}
+      <div className={`flex h-16 items-center gap-3 border-b border-white/10 ${collapsed ? 'justify-center px-2' : 'pl-5 pr-3'}`}>
+        {!collapsed && (
+          <>
+            <img src="/logo.png" alt="" className="h-9 w-9 shrink-0" />
+            <span className="flex-1 font-display text-2xl font-black tracking-wide text-white">AFKC</span>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={collapsed ? 'Lebarkan menu' : 'Ciutkan menu'}
+          title={collapsed ? 'Lebarkan menu' : 'Ciutkan menu'}
+          className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-pantai"
+        >
+          {collapsed ? <ChevronsRight size={20} aria-hidden /> : <ChevronsLeft size={20} aria-hidden />}
+        </button>
       </div>
 
       <nav aria-label="Menu utama" className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
@@ -74,15 +87,6 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
         >
           <LogOut size={20} aria-hidden />
           {!collapsed && 'Keluar'}
-        </button>
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={collapsed ? 'Lebarkan menu' : 'Ciutkan menu'}
-          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-white/10 hover:text-white ${collapsed ? 'justify-center' : ''}`}
-        >
-          {collapsed ? <ChevronsRight size={20} aria-hidden /> : <ChevronsLeft size={20} aria-hidden />}
-          {!collapsed && 'Ciutkan menu'}
         </button>
       </div>
     </aside>

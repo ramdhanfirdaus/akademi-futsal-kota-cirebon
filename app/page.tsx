@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getDb } from '@/server/db';
 import { publicOverview, type PublicClass, type PublicCoach } from '@/server/services/public';
+import { listGallery } from '@/server/services/gallery';
 import { site } from '@/content/site';
 import { publicFonts } from '@/lib/fonts';
 import { Award } from 'lucide-react';
@@ -25,13 +26,17 @@ const DAYS = [
   { dow: 0, name: 'Minggu' },
 ];
 
-async function loadOverview(): Promise<{ classes: PublicClass[]; coaches: PublicCoach[] }> {
+type Photo = { src: string; alt: string; caption: string | null };
+
+async function loadOverview(): Promise<{ classes: PublicClass[]; coaches: PublicCoach[]; photos: Photo[] }> {
   try {
-    return await publicOverview(getDb());
+    const db = getDb();
+    const [overview, gallery] = await Promise.all([publicOverview(db), listGallery(db)]);
+    return { ...overview, photos: gallery.map((g) => ({ src: g.url, alt: g.caption ?? 'Kegiatan AFKC', caption: g.caption })) };
   } catch (err) {
     // The landing page must render even when the database is unreachable (e.g. during a build).
     console.error('landing: could not load overview', err);
-    return { classes: [], coaches: [] };
+    return { classes: [], coaches: [], photos: [] };
   }
 }
 
@@ -46,7 +51,9 @@ function initials(name: string) {
 const DISC = ['bg-laut', 'bg-daun', 'bg-laut-dalam'];
 
 export default async function Home() {
-  const { classes, coaches } = await loadOverview();
+  const { classes, coaches, photos: uploaded } = await loadOverview();
+  // Uploaded photos (Admin → Galeri) first, then any listed in content/site.ts.
+  const photos: Photo[] = [...uploaded, ...site.gallery.map((g) => ({ src: g.src, alt: g.alt, caption: g.alt }))];
   const sessions = DAYS.map((d) => ({
     ...d,
     items: classes
@@ -210,15 +217,15 @@ export default async function Home() {
         <section id="galeri" className="scroll-mt-4 bg-laut-muda py-20">
           <div className="wrap">
             <h2 className="font-display text-5xl font-black uppercase sm:text-6xl">Galeri</h2>
-            {site.gallery.length === 0 ? (
+            {photos.length === 0 ? (
               <p className="mt-3 max-w-[40rem] text-laut-dalam/75">Foto latihan dan pertandingan AFKC akan ditampilkan di sini.</p>
             ) : (
               <ul className="mt-10 columns-1 gap-4 sm:columns-2 lg:columns-3">
-                {site.gallery.map((g) => (
+                {photos.map((g) => (
                   <li key={g.src} className="mb-4 break-inside-avoid">
                     <figure>
                       <img src={g.src} alt={g.alt} loading="lazy" className="w-full rounded-lg" />
-                      <figcaption className="mt-2 text-sm text-laut-dalam/75">{g.alt}</figcaption>
+                      {g.caption && <figcaption className="mt-2 text-sm text-laut-dalam/75">{g.caption}</figcaption>}
                     </figure>
                   </li>
                 ))}

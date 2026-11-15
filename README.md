@@ -97,6 +97,8 @@ diperkecil di browser (±600 px, maks. 500 KB) dan disimpan di database, jadi ti
 file terpisah.
 
 Teks, kontak, dan galeri diatur di `content/site.ts`:
-- **Galeri:** taruh foto di `public/gallery/` lalu tambahkan ke daftar `gallery`, mis.
-  `{ src: '/gallery/latihan-sabtu.jpg', alt: 'Latihan kelas B1 hari Sabtu' }`. Kecilkan foto dulu (lebar ±1600 px).
+- **Galeri:** cara termudah lewat menu admin **Galeri** (unggah beberapa foto sekaligus, beri keterangan,
+  hapus). Foto diperkecil otomatis (±1600 px, maks. 1 MB) dan langsung tampil di halaman depan. Alternatif untuk
+  foto tetap: taruh di `public/gallery/` lalu daftarkan di `gallery`, mis.
+  `{ src: '/gallery/latihan-sabtu.jpg', alt: 'Latihan kelas B1 hari Sabtu' }`.
 - **Kontak:** isi `address`, `whatsapp` (format `62812...`), dan `instagram`; yang kosong tidak ditampilkan.
