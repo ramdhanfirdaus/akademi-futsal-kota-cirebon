@@ -77,7 +77,7 @@ export function route<P = Record<string, string>>(
       if (opts.roles) {
         if (!actor) {
           const res = errorBody(401, 'Unauthenticated');
-          // A stale/deactivated session would otherwise bounce between /login and /app via proxy.ts.
+          // Clear a stale/deactivated session so the browser stops sending it.
           if (token) res.headers.append('Set-Cookie', sessionCookieHeader(null));
           return res;
         }

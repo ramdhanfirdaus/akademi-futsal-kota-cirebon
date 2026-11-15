@@ -1,6 +1,6 @@
 import { jwtVerify } from 'jose';
 
-/** Session token helpers that are safe to use from `proxy.ts` (no database, no Node-only modules). */
+/** Session token helpers with no database or Node-only dependencies. */
 
 export type Role = 'ADMIN' | 'COACH' | 'STUDENT';
 

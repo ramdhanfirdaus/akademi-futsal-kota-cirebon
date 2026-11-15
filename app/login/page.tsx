@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import type { AppDispatch, RootState } from '@/store';
-import { login } from '@/store/slices/authSlice';
+import { fetchMe, login } from '@/store/slices/authSlice';
 import PasswordInput from '@/components/Input/PasswordInput';
 import Waves from '@/components/landing/Waves';
 import { publicFonts } from '@/lib/fonts';
@@ -18,11 +18,16 @@ export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const user = useSelector((state: RootState) => state.auth.user);
+  const authStatus = useSelector((state: RootState) => state.auth.status);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // Already signed in? Go straight to the dashboard.
+  useEffect(() => {
+    if (authStatus === 'idle') dispatch(fetchMe());
+  }, [authStatus, dispatch]);
   useEffect(() => {
     if (user) router.replace('/app/dashboard');
   }, [user, router]);
