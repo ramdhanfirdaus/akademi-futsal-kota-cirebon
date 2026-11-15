@@ -1,6 +1,8 @@
 # Netlify mendeteksi Next.js secara otomatis (adapter OpenNext, tanpa plugin tambahan).
 [build]
-  command = "npm run build"
+  # webpack, bukan Turbopack: build Turbopack di Windows memuat `pg` lewat symlink ber-hash
+  # (pg-<hash>) yang tidak ikut terkemas ke function Netlify, sehingga semua API error 500.
+  command = "npx next build --webpack"
   publish = ".next"
 
 [build.environment]
