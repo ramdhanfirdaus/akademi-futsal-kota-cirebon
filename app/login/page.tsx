@@ -52,7 +52,7 @@ export default function LoginPage() {
         </div>
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 pb-4 pt-2 text-center lg:pb-10">
           <img src="/logo.png" alt="Lambang Futsal Kota Cirebon" className="w-32 sm:w-40 lg:w-72" />
-          <p className="font-display text-4xl font-black uppercase leading-none sm:text-5xl lg:text-7xl">
+          <p className="font-display text-3xl font-black uppercase leading-none sm:text-4xl lg:text-5xl">
             Akademi Futsal
             <br />
             Kota Cirebon

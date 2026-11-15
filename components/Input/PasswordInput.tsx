@@ -8,7 +8,8 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & { toggleClass
 /** Password field with a button that shows or hides what was typed. */
 export default function PasswordInput({ className = '', toggleClassName = '', ...props }: Props) {
   const [visible, setVisible] = useState(false);
-  const Icon = visible ? EyeOff : Eye;
+  // The icon shows the current state: open eye = visible, crossed eye = hidden.
+  const Icon = visible ? Eye : EyeOff;
   return (
     <div className="relative">
       <input {...props} type={visible ? 'text' : 'password'} className={`${className} pr-12`} />

@@ -83,7 +83,7 @@ export default async function Home() {
 
         <div className="wrap grid items-center gap-8 pb-6 pt-6 md:grid-cols-[1.4fr_1fr] md:pt-12">
           <div>
-            <h1 className="font-display text-[clamp(3.5rem,9vw,10rem)] font-black uppercase leading-[0.85] tracking-tight">
+            <h1 className="font-display text-[length:clamp(2.75rem,6vw,6.5rem)] font-black uppercase leading-[0.85] tracking-tight">
               Akademi Futsal Kota Cirebon
             </h1>
             <p className="mt-6 max-w-[38rem] text-lg leading-relaxed lg:text-xl">{site.intro}</p>
