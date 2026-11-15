@@ -1,0 +1,7 @@
+{
+  "name": "AFKC Hub Management System",
+  "description": "A comprehensive dashboard for AFKC Hub to manage students, coaches, attendance, schedules, and payments, integrated with Gemini AI for smart insights.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
