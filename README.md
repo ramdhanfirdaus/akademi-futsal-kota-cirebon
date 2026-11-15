@@ -35,41 +35,13 @@ Perintah lain: `npm test` (semua test), `npm run typecheck`, `npm run build`.
 
 ## Deploy gratis: Netlify + Neon
 
-### 1. Database (Neon)
-1. Daftar di <https://neon.tech>, buat project baru. **Pilih region yang sama dengan server Netlify**, bukan
-   yang paling dekat dengan Cirebon: setiap request API melakukan beberapa query, jadi jarak server ↔ database
-   jauh lebih berpengaruh daripada jarak pengguna ↔ server. Fungsi Netlify secara default berjalan di
-   **US East (Ohio)** → pilih Neon **AWS US East 2 (Ohio)**. Cek region fungsi di Netlify:
-   *Project configuration → Build & deploy → Functions region*; jika berbeda, samakan region Neon-nya.
-2. Di *Connection Details*, pilih **Pooled connection** dan salin connection string-nya
-   (host-nya mengandung `-pooler`, diakhiri `?sslmode=require`).
+Ikuti **[DEPLOY.md](DEPLOY.md)**: langkah lengkap deploy dengan Netlify CLI (tanpa GitHub) dan database Neon,
+termasuk cara rilis versi baru, membatalkan rilis, batas paket gratis, dan solusi masalah umum.
 
-### 2. Buat tabel & akun admin (dari komputer sendiri, sekali saja)
-Isi `.env` sementara dengan `DATABASE_URL` dari Neon, lalu:
-
-```bash
-npm run db:migrate
-npm run db:seed             # tanpa --demo untuk production
-```
-
-### 3. Aplikasi (Netlify)
-1. Push folder ini ke repository GitHub.
-2. Di <https://app.netlify.com> → **Add new project → Import an existing project** → pilih repo.
-   Netlify mendeteksi Next.js otomatis (build `npm run build`, publish `.next`, sudah diatur di `netlify.toml`).
-3. **Site configuration → Environment variables**, tambahkan:
-   - `DATABASE_URL` = connection string pooled dari Neon
-   - `JWT_SECRET` = string acak minimal 32 karakter (jangan sama dengan yang di lokal; aplikasi menolak yang lebih pendek)
-4. **Deploy**. Setelah selesai, buka URL Netlify dan login dengan akun admin dari langkah 2.
-
-### Batas paket gratis Netlify (perlu diperhatikan)
-- Kuota **300 kredit/bulan**. Setiap **deploy production memakai 15 kredit**; deploy preview/branch gratis.
-  Pemakaian harian akademi kira-kira 50–80 kredit/bulan, jadi masih cukup untuk ±15 kali deploy per bulan.
-- Jika kredit habis, situs **di-pause** sampai bulan berikutnya (tidak ada tagihan).
-- Cek sisa kredit di dashboard Netlify → **Usage**.
-- Tips: kumpulkan perubahan, lalu deploy sekaligus; uji coba lewat deploy preview.
-
-### Neon (gratis)
-- Database "tidur" saat tidak dipakai; permintaan pertama setelah lama tidak dipakai bisa ±1 detik lebih lambat.
+Alternatif lewat GitHub: push folder ini ke repository **private**, lalu di Netlify pilih **Add new project →
+Import an existing project**. Isi `DATABASE_URL` (pooled) dan `JWT_SECRET` di **Site configuration →
+Environment variables**. Setiap push ke branch utama menjadi deploy production (15 kredit). Sebelum push,
+pastikan `.env.example` tidak berisi password asli.
 
 ## Pindah hosting
 Kode tidak memakai fitur khusus Netlify. Untuk pindah (mis. ke Vercel atau Cloudflare), cukup set
