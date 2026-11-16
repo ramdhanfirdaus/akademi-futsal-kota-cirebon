@@ -33,7 +33,7 @@ export default function CoachCard({
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-6 xs:grid-cols-4 gap-2">
                     {coach.classes?.map((item) => (
-                        <Badge title={classLabel(item.name)}/>
+                        <Badge key={item.id} title={classLabel(item.name)}/>
                     ))}
                 </div>
                 <div className="flex gap-2 w-full pt-4">

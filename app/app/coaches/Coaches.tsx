@@ -237,7 +237,7 @@ const Coaches: React.FC = () => {
                                             <td className="px-6 py-4">
                                                 <div className="grid grid-cols-3 gap-2">
                                                     {coach.classes?.map((item) => (
-                                                        <Badge title={classLabel(item.name)}/>
+                                                        <Badge key={item.id} title={classLabel(item.name)}/>
                                                     ))}
                                                 </div>
                                             </td>
