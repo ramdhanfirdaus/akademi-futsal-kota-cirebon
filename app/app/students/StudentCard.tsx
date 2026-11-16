@@ -22,7 +22,7 @@ export default function StudentCard({
     return (
         <div
             onClick={() => onClick(student)}
-            className="bg-white p-4 rounded-2xl border border-slate-100 shadow-md active:scale-[0.98] transition-all hover:border-blue-200"
+            className="bg-white p-4 rounded-2xl border border-slate-100 shadow-md active:scale-[0.98] transition-all hover:border-laut/40"
         >
             <div className="flex items-center gap-3">
                 <div className="flex-1 overflow-hidden">

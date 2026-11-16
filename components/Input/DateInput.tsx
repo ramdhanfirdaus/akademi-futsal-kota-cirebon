@@ -42,7 +42,7 @@ export default function DateInput({
                 onChange={(e) => onChange(e.target.value)}
                 min={min}
                 max={max}
-                className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-1.5 text-slate-700 font-semibold focus:border-blue-500 focus:outline-none transition-all appearance-none cursor-pointer"
+                className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-1.5 text-slate-700 font-semibold focus:border-laut focus:outline-none transition-all appearance-none cursor-pointer"
             />
         </>
     );

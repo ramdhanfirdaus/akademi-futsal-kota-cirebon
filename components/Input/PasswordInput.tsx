@@ -19,7 +19,7 @@ export default function PasswordInput({ className = '', toggleClassName = '', ..
         aria-label={visible ? 'Sembunyikan password' : 'Tampilkan password'}
         aria-pressed={visible}
         title={visible ? 'Sembunyikan password' : 'Tampilkan password'}
-        className={`absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 ${toggleClassName}`}
+        className={`absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-laut ${toggleClassName}`}
       >
         <Icon size={18} aria-hidden />
       </button>

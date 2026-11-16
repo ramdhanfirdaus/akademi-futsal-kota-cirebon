@@ -23,8 +23,8 @@ export default function FormCheckbox({
                         rounded-md
                         border border-slate-300
                         bg-white
-                        checked:bg-blue-600
-                        checked:border-blue-600
+                        checked:bg-laut-dalam
+                        checked:border-laut-dalam
                         transition-all
                         ${className}
                     `}

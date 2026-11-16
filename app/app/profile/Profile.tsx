@@ -6,13 +6,13 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { ProfileService } from '@/services';
 import { apiErrorMessage } from '@/services/errors';
-import { useNotification } from '@/components';
+import { AppHeader, useNotification } from '@/components';
 import PasswordInput from '@/components/Input/PasswordInput';
 
 const ROLE_LABEL: Record<string, string> = { ADMIN: 'Admin', COACH: 'Pelatih', STUDENT: 'Siswa' };
 
 const inputCls =
-  'w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm';
+  'w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-laut outline-none text-sm';
 
 const Profile: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -40,14 +40,11 @@ const Profile: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <header>
-        <h2 className="text-2xl font-bold text-slate-800">Profil Saya</h2>
-        <p className="text-slate-500">Informasi akun dan keamanan.</p>
-      </header>
+      <AppHeader title="Profil Saya" subtitle="Informasi akun dan ganti password" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center h-fit">
-          <div className="w-28 h-28 bg-blue-100 rounded-full flex items-center justify-center text-3xl font-bold text-blue-600 border-4 border-white shadow-md uppercase">
+          <div className="w-28 h-28 bg-laut-muda rounded-full flex items-center justify-center text-3xl font-bold text-laut border-4 border-white shadow-md uppercase">
             {user?.username?.charAt(0) ?? '?'}
           </div>
           <h3 className="mt-4 font-bold text-slate-800 text-lg">{user?.username}</h3>
@@ -58,7 +55,7 @@ const Profile: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="md:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-5">
           <h4 className="font-bold text-slate-800 flex items-center gap-2">
-            <Key size={18} className="text-blue-600" /> Ganti Password
+            <Key size={18} className="text-laut" /> Ganti Password
           </h4>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700">Password Lama</label>
@@ -79,7 +76,7 @@ const Profile: React.FC = () => {
           </div>
           <div className="pt-4 border-t border-slate-100 flex justify-end">
             <button type="submit" disabled={isSaving}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-blue-600/20 flex items-center gap-2 transition-all active:scale-95">
+              className="bg-laut-dalam hover:bg-laut disabled:bg-slate-300 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-laut-dalam/20 flex items-center gap-2 transition-all active:scale-95">
               {isSaving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <Save size={18} />}
               Simpan Password
             </button>

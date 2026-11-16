@@ -13,6 +13,7 @@ import PaymentTable from "@/app/app/payments/PaymentTable.tsx";
 import { AppHeader, BaseButton, SelectInput, useNotification } from "@/components";
 import { ClassService, PaymentService } from "@/services";
 import { apiErrorMessage } from '@/services/errors';
+import SaveBar from '@/components/SaveBar';
 
 const Payments: React.FC = () => {
   const { showNotification } = useNotification();
@@ -97,18 +98,7 @@ const Payments: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <AppHeader
-          title="Pembayaran"
-          subtitle="Management Pembayaran"
-          actions={[
-            {
-              label: "Simpan Perubahan",
-              icon: Save,
-              onClick: handleSave,
-              disabled: isSubmitting || records.length === 0
-            },
-          ]}
-      />
+      <AppHeader title="Iuran" subtitle="Catat iuran bulanan siswa per kelas" />
 
       {/* Controls Card */}
       <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 space-y-6">
@@ -160,12 +150,13 @@ const Payments: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50">
-        <div className="flex items-center gap-3 text-sm font-bold text-blue-700">
+      <SaveBar onSave={handleSave} disabled={records.length === 0} saving={isSubmitting}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-8">
+        <div className="flex items-center gap-3 text-sm font-bold text-laut-dalam">
           <AlertCircle size={16} />
           <span>Klik status untuk merubah pembayaran siswa.</span>
         </div>
-        <div className="flex items-center gap-5">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
           <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Lunas
           </div>
@@ -180,6 +171,7 @@ const Payments: React.FC = () => {
           </div>
         </div>
       </div>
+      </SaveBar>
 
       {/* Table Container */}
       <div className="bg-white border border-slate-100 rounded-[2rem] shadow-xl shadow-slate-200/40 overflow-hidden">

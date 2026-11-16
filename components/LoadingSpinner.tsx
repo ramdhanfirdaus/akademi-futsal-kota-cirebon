@@ -27,7 +27,7 @@ export default function LoadingSpinner({
             <div
                 className={`
                     ${sizeClasses[size]}
-                    border-blue-100 border-t-blue-600
+                    border-laut/15 border-t-laut
                     rounded-full animate-spin
                 `}
             />

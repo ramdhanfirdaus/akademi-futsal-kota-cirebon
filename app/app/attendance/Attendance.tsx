@@ -21,6 +21,7 @@ import {
 import { ClassService, AttendanceService } from "@/services";
 import { apiErrorMessage } from '@/services/errors';
 import { addDays, todayWIB } from '@/lib/date';
+import SaveBar from '@/components/SaveBar';
 
 const App: React.FC = () => {
   const { showNotification } = useNotification();
@@ -117,18 +118,7 @@ const App: React.FC = () => {
   return (
       <div className="space-y-6">
         {/* Top Header */}
-        <AppHeader
-            title="Absensi"
-            subtitle="Management Absensi"
-            actions={[
-              {
-                label: "Simpan Perubahan",
-                icon: Plus,
-                onClick: handleSave,
-                disabled: isSubmitting || !attendanceData
-              },
-            ]}
-        />
+        <AppHeader title="Absensi" subtitle="Catat kehadiran siswa per kelas" />
 
         <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8 space-y-6">
           {/* Controls Card */}
@@ -192,11 +182,17 @@ const App: React.FC = () => {
             </div>
           </div>
 
+          {attendanceData && (
+            <SaveBar onSave={handleSave} saving={isSubmitting}>
+              <p className="text-sm font-bold text-laut-dalam">Centang siswa yang hadir, lalu tekan Simpan Perubahan.</p>
+            </SaveBar>
+          )}
+
           {/* Main Grid Card */}
           <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden relative">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-100">
-                <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent animate-spin rounded-full mb-3"></div>
+                <div className="w-8 h-8 border-3 border-laut border-t-transparent animate-spin rounded-full mb-3"></div>
                 <p className="text-slate-400 font-bold text-sm">Memuat data kelas...</p>
               </div>
             ) : !attendanceData ? (
@@ -224,10 +220,10 @@ const App: React.FC = () => {
                         const isToday = date.date === today;
 
                         return (
-                            <th key={date.date} className={`px-4 py-5 min-w-[100px] text-center border-l border-slate-100 ${isToday ? 'bg-blue-50/50' : ''}`}>
+                            <th key={date.date} className={`px-4 py-5 min-w-[100px] text-center border-l border-slate-100 ${isToday ? 'bg-laut-muda/50' : ''}`}>
                               <div className="flex flex-col">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{dayName}</span>
-                                <span className={`text-lg font-black ${isToday ? 'text-blue-600' : 'text-slate-700'}`}>{dayNum}</span>
+                                <span className={`text-lg font-black ${isToday ? 'text-laut' : 'text-slate-700'}`}>{dayNum}</span>
                                 <span className="text-[10px] text-slate-400 font-medium">{d.toLocaleDateString('id-ID', { month: 'short' })}</span>
                               </div>
                             </th>

@@ -23,7 +23,7 @@ export default function FormInput({
                 className={`
                     w-full px-4 py-3
                     bg-slate-50 border border-slate-300
-                    focus:border-blue-500 focus:bg-white
+                    focus:border-laut focus:bg-white
                     rounded-xl text-sm font-bold
                     outline-none transition-all
                     ${className}

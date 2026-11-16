@@ -109,7 +109,7 @@ const Classes: React.FC = () => {
         <div className="space-y-6">
             {/* Header & Main Controls */}
             <AppHeader
-                title="Daftar Kelas"
+                title="Kelas"
                 subtitle="Atur kelas akademi dan jadwal latihan mingguan"
                 actions={[
                     {
@@ -128,7 +128,7 @@ const Classes: React.FC = () => {
                 {isLoading ? (
                     <div className="p-20 flex flex-col items-center justify-center space-y-4">
                         <div
-                            className="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+                            className="w-12 h-12 border-4 border-laut/15 border-t-laut rounded-full animate-spin"></div>
                         <p className="text-slate-400 font-medium animate-pulse">Memuat data kelas...</p>
                     </div>
                 ) : classes.length === 0 ? (
@@ -163,12 +163,12 @@ const Classes: React.FC = () => {
                     <div
                         className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                         <div
-                            className="bg-blue-600 p-8 flex justify-between items-center text-white relative overflow-hidden">
+                            className="bg-laut-dalam p-8 flex justify-between items-center text-white relative overflow-hidden">
                             <div
                                 className="absolute top-0 right-0 w-48 h-48 bg-white/10 -mr-24 -mt-24 rounded-full"></div>
                             <div className="relative z-10">
                                 <h3 className="text-2xl font-black">{editingClass?.id ? 'Edit Data Kelas' : 'Kelas Baru'}</h3>
-                                <p className="text-blue-100 text-sm font-medium">Lengkapi informasi kelas dan
+                                <p className="text-laut-muda text-sm font-medium">Lengkapi informasi kelas dan
                                     jadwal.</p>
                             </div>
                             <button
@@ -189,7 +189,7 @@ const Classes: React.FC = () => {
                                     <input
                                         type="text"
                                         placeholder="Nama Kelas"
-                                        className="w-full px-5 py-3.5 bg-slate-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-2xl text-sm font-bold transition-all outline-none"
+                                        className="w-full px-5 py-3.5 bg-slate-50 border-2 border-transparent focus:border-laut focus:bg-white rounded-2xl text-sm font-bold transition-all outline-none"
                                         required
                                         value={editingClass?.name || ''}
                                         onChange={e => setEditingClass({...editingClass, name: e.target.value})}
@@ -199,7 +199,7 @@ const Classes: React.FC = () => {
                                     <label
                                         className="text-[10px] font-black text-slate-400 uppercase px-2">Pelatih</label>
                                     <select
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 focus:border-blue-500 focus:bg-white rounded-xl text-sm font-bold transition-all outline-none"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 focus:border-laut focus:bg-white rounded-xl text-sm font-bold transition-all outline-none"
                                         value={editingClass?.coach_id ?? ''}
                                         onChange={e => setEditingClass({
                                             ...editingClass,
@@ -225,7 +225,7 @@ const Classes: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={handleAddSchedule}
-                                        className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-4 py-2 rounded-xl text-xs font-black hover:bg-blue-100 transition-colors"
+                                        className="flex items-center gap-1.5 text-laut bg-laut-muda px-4 py-2 rounded-xl text-xs font-black hover:bg-laut-muda transition-colors"
                                     >
                                         <Plus size={14}/> Tambah Sesi
                                     </button>
@@ -235,13 +235,13 @@ const Classes: React.FC = () => {
                                     {editingClass?.schedules?.map((schedule, index) => (
                                         <div
                                             key={index}
-                                            className="bg-slate-50 border-2 border-transparent p-2 rounded-3xl grid grid-cols-12 gap-1 items-center group/item hover:border-blue-100 hover:bg-white transition-all shadow-sm"
+                                            className="bg-slate-50 border-2 border-transparent p-2 rounded-3xl grid grid-cols-12 gap-1 items-center group/item hover:border-laut/30 hover:bg-white transition-all shadow-sm"
                                         >
                                             <div className="col-span-12 md:col-span-4 space-y-1">
                                                 <span
                                                     className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Hari</span>
                                                 <select
-                                                    className="w-full px-4 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold outline-none focus:border-blue-400"
+                                                    className="w-full px-4 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold outline-none focus:border-laut"
                                                     value={schedule.day_of_week}
                                                     onChange={(e) => handleScheduleChange(index, 'day_of_week', parseInt(e.target.value))}
                                                 >
@@ -254,7 +254,7 @@ const Classes: React.FC = () => {
                                                     className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Mulai</span>
                                                 <input
                                                     type="time"
-                                                    className="w-full px-3 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold outline-none focus:border-blue-400"
+                                                    className="w-full px-3 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold outline-none focus:border-laut"
                                                     value={schedule.start_time.slice(0, 5)}
                                                     onChange={(e) => handleScheduleChange(index, 'start_time', e.target.value)}
                                                 />
@@ -264,7 +264,7 @@ const Classes: React.FC = () => {
                                                     className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Selesai</span>
                                                 <input
                                                     type="time"
-                                                    className="w-full px-3 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold outline-none focus:border-blue-400"
+                                                    className="w-full px-3 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold outline-none focus:border-laut"
                                                     value={schedule.end_time.slice(0, 5)}
                                                     onChange={(e) => handleScheduleChange(index, 'end_time', e.target.value)}
                                                 />
@@ -305,7 +305,7 @@ const Classes: React.FC = () => {
                                 <button
                                     type="submit"
                                     disabled={isSaving}
-                                    className="flex-[2] py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-xl shadow-blue-100 transition-all disabled:opacity-50 flex items-center justify-center gap-3 text-sm active:scale-95"
+                                    className="flex-[2] py-4 bg-laut-dalam hover:bg-laut text-white font-bold rounded-2xl shadow-xl shadow-laut/10 transition-all disabled:opacity-50 flex items-center justify-center gap-3 text-sm active:scale-95"
                                 >
                                     {isSaving ? (
                                         <div

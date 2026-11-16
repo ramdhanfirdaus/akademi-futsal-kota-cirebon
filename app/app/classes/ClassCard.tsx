@@ -22,7 +22,7 @@ export default function ClassCard({
             key={cls.id}
             className="bg-white rounded-[2.5rem] border border-slate-100 p-7 flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow group relative overflow-hidden"
         >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 -mr-16 -mt-16 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-laut-muda -mr-16 -mt-16 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
 
             <div className="relative z-10 gap-2">
                 <div className="flex justify-between items-start">
@@ -56,7 +56,7 @@ export default function ClassCard({
                     <div>
                         {cls.schedules.length > 0 ? cls.schedules.map((s, idx) => (
                             <div key={idx} className="flex items-center gap-3 bg-white border border-slate-50 py-1 px-2.5 rounded-2xl shadow-sm">
-                                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                <div className="w-8 h-8 rounded-lg bg-laut-muda flex items-center justify-center text-laut">
                                     <Calendar size={14} />
                                 </div>
                                 <div className="flex-1">

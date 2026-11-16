@@ -150,7 +150,7 @@ export default function StudentImport({
             <li className="rounded-xl border border-slate-200 p-4">
               <p className="text-sm font-bold text-slate-800">1. Unduh dan isi template</p>
               <p className="mt-1 text-sm text-slate-500">Wajib: Nama Lengkap, Nama Panggilan, Kelas. Kolom lain boleh kosong.</p>
-              <button type="button" onClick={downloadTemplate} className="mt-3 inline-flex items-center gap-2 rounded-lg border-2 border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 hover:border-blue-400">
+              <button type="button" onClick={downloadTemplate} className="mt-3 inline-flex items-center gap-2 rounded-lg border-2 border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 hover:border-laut">
                 <Download size={16} aria-hidden /> Unduh template
               </button>
             </li>
@@ -161,7 +161,7 @@ export default function StudentImport({
                 type="button"
                 onClick={() => fileInput.current?.click()}
                 disabled={busy}
-                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:bg-slate-300"
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-laut-dalam px-3 py-2 text-sm font-bold text-white hover:bg-laut disabled:bg-slate-300"
               >
                 <Upload size={16} aria-hidden /> {busy ? 'Memeriksa…' : fileName ? 'Pilih file lain' : 'Pilih file'}
               </button>
@@ -269,10 +269,10 @@ export default function StudentImport({
       <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 p-4">
         {step === 'done' ? (
           <>
-            <button type="button" onClick={downloadAccounts} className="inline-flex items-center gap-2 rounded-xl border-2 border-slate-200 px-4 py-2 font-bold text-slate-700 hover:border-blue-400">
+            <button type="button" onClick={downloadAccounts} className="inline-flex items-center gap-2 rounded-xl border-2 border-slate-200 px-4 py-2 font-bold text-slate-700 hover:border-laut">
               <FileSpreadsheet size={18} aria-hidden /> Unduh daftar akun
             </button>
-            <button type="button" onClick={close} className="rounded-xl bg-blue-600 px-5 py-2 font-bold text-white hover:bg-blue-700">
+            <button type="button" onClick={close} className="rounded-xl bg-laut-dalam px-5 py-2 font-bold text-white hover:bg-laut">
               Selesai
             </button>
           </>
@@ -285,7 +285,7 @@ export default function StudentImport({
               type="button"
               onClick={save}
               disabled={!canSave || busy}
-              className="rounded-xl bg-blue-600 px-5 py-2 font-bold text-white hover:bg-blue-700 disabled:bg-slate-300"
+              className="rounded-xl bg-laut-dalam px-5 py-2 font-bold text-white hover:bg-laut disabled:bg-slate-300"
             >
               {busy && step === 'preview' ? 'Menyimpan…' : `Simpan ${rows.length && !errorCount ? rows.length : ''} siswa`}
             </button>

@@ -33,7 +33,7 @@ export default function StudentDetail({
             <div className="flex justify-between items-center gap-4">
                 <button
                     onClick={onBack}
-                    className="group flex items-center gap-2 px-4 py-2 text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-indigo-600 transition-all shadow-sm font-semibold text-sm"
+                    className="group flex items-center gap-2 px-4 py-2 text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-laut transition-all shadow-sm font-semibold text-sm"
                 >
                     <ChevronLeft size={18} className="group-hover:-translate-x-0.5 transition-transform" />
                     Back to List
@@ -63,7 +63,7 @@ export default function StudentDetail({
                                                 {student.name.charAt(0)}
                                             </span>
                                         )}
-                                        <div className="absolute inset-0 bg-indigo-600/0 group-hover:bg-indigo-600/10 transition-colors flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-laut-dalam/0 group-hover:bg-laut-dalam/10 transition-colors flex items-center justify-center">
                                             <UserCircle className="text-white opacity-0 group-hover:opacity-100 transition-opacity" size={24} />
                                         </div>
                                     </div>
@@ -75,7 +75,7 @@ export default function StudentDetail({
                                 <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">
                                     {student.name}
                                 </h2>
-                                <p className="text-indigo-600 font-bold text-base mt-2 flex items-center justify-center gap-1.5">
+                                <p className="text-laut font-bold text-base mt-2 flex items-center justify-center gap-1.5">
                                     <Trophy size={16} />
                                     {student.nickname}
                                 </p>
@@ -101,7 +101,7 @@ export default function StudentDetail({
                     <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 p-8">
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="text-xl font-extrabold text-slate-900 flex items-center gap-3">
-                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                                <div className="p-2 bg-laut-muda text-laut rounded-xl">
                                     <Hash size={20} />
                                 </div>
                                 Personal Profile
@@ -256,7 +256,7 @@ function ContactItem({
 }) {
     return (
         <div className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+            <div className="w-8 h-8 rounded-lg bg-laut-muda text-laut flex items-center justify-center group-hover:bg-laut-dalam group-hover:text-white transition-colors">
                 <Icon size={14} />
             </div>
             <div className="flex-1 min-w-0">
@@ -278,7 +278,7 @@ function StatusBadge({
 }) {
     const styles = {
         success: "bg-emerald-50 text-emerald-700 border-emerald-100",
-        info: "bg-indigo-50 text-indigo-700 border-indigo-100",
+        info: "bg-laut-muda text-laut-dalam border-laut/15",
         warning: "bg-amber-50 text-amber-700 border-amber-100",
     };
 

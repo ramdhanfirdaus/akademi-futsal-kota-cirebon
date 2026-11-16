@@ -40,13 +40,13 @@ export default function BaseModal({
                 `}
             >
                 {/* HEADER */}
-                <div className="bg-blue-600 p-8 flex justify-between items-center text-white relative overflow-hidden">
+                <div className="bg-laut-dalam p-8 flex justify-between items-center text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 -mr-24 -mt-24 rounded-full"></div>
                     <div>
                         <h3 className="text-xl font-black">{title}</h3>
 
                         {subtitle && (
-                            <p className="text-blue-100 text-[10px] font-bold mt-0.5 uppercase tracking-widest">
+                            <p className="text-laut-muda text-[10px] font-bold mt-0.5 uppercase tracking-widest">
                                 {subtitle}
                             </p>
                         )}

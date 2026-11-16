@@ -26,7 +26,7 @@ export default function BaseButton({
 }: BaseButtonProps) {
     const variantClasses = {
         primary:
-            "bg-blue-600 hover:bg-blue-700 text-white",
+            "bg-laut-dalam hover:bg-laut text-white",
         secondary:
             "bg-slate-100 hover:bg-slate-200 text-slate-700",
         ghost:
@@ -34,7 +34,7 @@ export default function BaseButton({
         danger:
             "bg-rose-600 text-white hover:bg-rose-700 shadow-sm shadow-rose-200",
         "soft-primary":
-            "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white",
+            "bg-laut-muda text-laut hover:bg-laut-dalam hover:text-white",
         "soft-danger":
             "bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white",
     };

@@ -177,8 +177,8 @@ const Students: React.FC = () => {
         <div className="space-y-6">
             {/* Header & Main Controls */}
             <AppHeader
-                title="Daftar Siswa"
-                subtitle="Pengelolaan siswa akademi"
+                title="Siswa"
+                subtitle="Data siswa, kelas, dan akun login"
                 actions={[
                     {
                         label: "Tambah Siswa",
@@ -284,7 +284,7 @@ const Students: React.FC = () => {
                                 {students.map((student) => (
                                     <tr
                                         key={student.id}
-                                        className="hover:bg-blue-50 transition-all cursor-pointer group"
+                                        className="hover:bg-laut-muda transition-all cursor-pointer group"
                                         onClick={() => setSelectedStudent(student)}
                                     >
                                         <td className="px-6 py-4">

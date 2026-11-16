@@ -31,7 +31,7 @@ export default function Pagination({
             <button
                 disabled={page === 1}
                 onClick={() => onChange(page - 1)}
-                className="p-2 bg-slate-50 border border-slate-100 rounded-xl disabled:opacity-30 transition-all hover:bg-blue-50 hover:text-blue-600 text-slate-500"
+                className="p-2 bg-slate-50 border border-slate-100 rounded-xl disabled:opacity-30 transition-all hover:bg-laut-muda hover:text-laut text-slate-500"
             >
                 <ChevronLeft size={16}/>
             </button>
@@ -50,7 +50,7 @@ export default function Pagination({
                                 w-8 h-8 rounded-xl text-xs font-black transition-all
                                 ${
                                 page === p
-                                    ? "bg-blue-600 text-white shadow-md shadow-blue-100"
+                                    ? "bg-laut-dalam text-white shadow-md shadow-laut/10"
                                     : "bg-white text-slate-400 hover:bg-slate-50"
                             }
                             `}
@@ -65,7 +65,7 @@ export default function Pagination({
             <button
                 disabled={page === lastPage}
                 onClick={() => onChange(page + 1)}
-                className="p-2 bg-slate-50 border border-slate-100 rounded-xl disabled:opacity-30 transition-all hover:bg-blue-50 hover:text-blue-600 text-slate-500"
+                className="p-2 bg-slate-50 border border-slate-100 rounded-xl disabled:opacity-30 transition-all hover:bg-laut-muda hover:text-laut text-slate-500"
             >
                 <ChevronRight size={16}/>
             </button>

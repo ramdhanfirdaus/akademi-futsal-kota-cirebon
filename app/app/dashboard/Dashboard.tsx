@@ -14,6 +14,7 @@ import { apiErrorMessage } from '@/services/errors';
 import { MONTH_KEYS } from '@/constants.tsx';
 import { LoadingSpinner, useNotification } from '@/components';
 import { classLabel } from '@/lib/format';
+import { AppHeader } from '@/components';
 
 function monthLabel(key: string) {
   const [y, m] = key.split('-');
@@ -49,10 +50,7 @@ const StaffDashboard: React.FC = () => {
   return (
     <div className="space-y-5">
       <header className="space-y-3">
-        <div>
-          <h2 className="font-display text-4xl font-black uppercase text-laut-dalam">Peserta</h2>
-          <p className="text-slate-500">{stats ? `${scope}, ${monthLabel(stats.month)}` : 'Memuat…'}</p>
-        </div>
+        <AppHeader title="Dashboard" subtitle={stats ? `Ringkasan peserta · ${scope}, ${monthLabel(stats.month)}` : 'Memuat…'} />
         {allClasses.length > 0 && (
           <div className="no-scrollbar -mx-4 overflow-x-auto px-4 pb-1 md:mx-0 md:overflow-visible md:px-0" role="group" aria-label="Pilih kelas">
             <div className="flex w-max gap-2 md:w-auto md:flex-wrap">

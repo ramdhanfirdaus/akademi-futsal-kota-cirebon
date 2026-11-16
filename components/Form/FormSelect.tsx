@@ -35,7 +35,7 @@ export default function FormSelect({
                     appearance-none
                     w-full px-4 py-3 pr-10
                     bg-slate-50 border border-slate-300
-                    focus:border-blue-500 focus:bg-white
+                    focus:border-laut focus:bg-white
                     rounded-xl text-sm font-bold
                     outline-none transition-all
                     ${props.value ? "" : "text-slate-400"}

@@ -21,6 +21,7 @@ import type { BoardColumn } from '@/services/ClassBoardService';
 import { apiErrorMessage } from '@/services/errors';
 import { LoadingSpinner, useNotification } from '@/components';
 import { classLabel } from '@/lib/format';
+import { AppHeader } from '@/components';
 
 type Student = { id: number; name: string; nickname: string | null };
 
@@ -143,14 +144,11 @@ export default function ClassBoard() {
 
   return (
     <div className="space-y-4">
-      <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h2 className="font-display text-4xl font-black uppercase text-laut-dalam">Pindah Kelas</h2>
-          <p className="max-w-2xl text-slate-500">
-            Seret kartu siswa ke kelas lain, atau centang beberapa siswa lalu pilih kelas tujuan. Perubahan baru tersimpan setelah menekan Simpan.
-          </p>
-        </div>
-        <label className="relative block w-full lg:w-72">
+      <AppHeader
+        title="Pindah Kelas"
+        subtitle="Seret kartu siswa ke kelas lain, atau centang beberapa siswa lalu pilih kelas tujuan. Perubahan tersimpan setelah menekan Simpan."
+      >
+        <label className="relative block w-full md:w-72">
           <span className="sr-only">Cari siswa</span>
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden />
           <input
@@ -160,7 +158,7 @@ export default function ClassBoard() {
             className="w-full rounded-lg border-2 border-slate-200 bg-white py-2 pl-10 pr-3 text-sm focus:border-laut focus:outline-none"
           />
         </label>
-      </header>
+      </AppHeader>
 
       {board.columns.length === 0 ? (
         <p className="rounded-xl border border-slate-200 bg-white p-6 text-slate-600">Belum ada kelas. Buat kelas dulu di menu Kelas.</p>

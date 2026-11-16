@@ -32,7 +32,7 @@ export default function EmptyState({
             {onReset && (
                 <button
                     onClick={onReset}
-                    className="mt-4 text-blue-600 font-bold hover:underline text-sm"
+                    className="mt-4 text-laut font-bold hover:underline text-sm"
                 >
                     Reset Semua Filter
                 </button>

@@ -41,11 +41,11 @@ export default function DataTableFooter({
                 <div>
                     <p className="text-sm font-bold text-slate-800">
                         Menampilkan{" "}
-                        <span className="text-blue-600">
+                        <span className="text-laut">
                             {start}-{end}
                         </span>{" "}
                         dari{" "}
-                        <span className="text-blue-600">
+                        <span className="text-laut">
                             {total}
                         </span>{" "}
                         {entityName}
@@ -70,7 +70,7 @@ export default function DataTableFooter({
                                 px-2.5 py-1 rounded-lg text-xs font-black transition-all
                                 ${
                                 limit === size
-                                    ? "bg-white text-blue-600 shadow-sm"
+                                    ? "bg-white text-laut shadow-sm"
                                     : "text-slate-400 hover:text-slate-600"
                             }
                             `}

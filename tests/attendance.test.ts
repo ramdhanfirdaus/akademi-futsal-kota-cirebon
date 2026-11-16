@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { vi, beforeEach, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { createTestDb } from './helpers/db';
 import { makeClass, makeCoach, makeStudent } from './helpers/fixtures';
@@ -80,7 +80,15 @@ describe('attendance', () => {
   it('excludes inactive students and deleted schedules', async () => {
     const { userId } = await makeStudent(db, { classId, name: 'Andi' });
     await db.update(users).set({ status: 'INACTIVE' }).where(eq(users.id, userId));
-    await updateClass(db, classId, { name: 'A', coach_id: coachId, schedules: [{ id: wedId, day_of_week: 3, start_time: '16:00', end_time: '18:00' }] });
+    // Remove the Sunday schedule *before* the checked week, so the result doesn't depend on today's date
+    // (a schedule removed later would still show for the dates it was in use).
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-01T03:00:00Z'));
+    try {
+      await updateClass(db, classId, { name: 'A', coach_id: coachId, schedules: [{ id: wedId, day_of_week: 3, start_time: '16:00', end_time: '18:00' }] });
+    } finally {
+      vi.useRealTimers();
+    }
     const m = await matrix();
     expect(m.students.map((s) => s.name)).toEqual(['Budi']);
     expect(m.dates.map((d) => d.date)).toEqual(['2026-11-11']);

@@ -54,8 +54,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 };
             default:
                 return {
-                    iconBg: 'bg-indigo-100',
-                    iconColor: 'text-indigo-600',
+                    iconBg: 'bg-laut-muda',
+                    iconColor: 'text-laut',
                     btnVariant: 'primary' as const,
                     icon: (
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -80,7 +80,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             <div className="relative bg-white w-full max-w-md rounded-[2rem] overflow-hidden shadow-2xl animate-modal-pop">
 
                 {/* Visual Header Accent (Conditional based on variant) */}
-                <div className={`h-2 w-full ${variant === 'danger' ? 'bg-rose-500' : 'bg-indigo-500'}`} />
+                <div className={`h-2 w-full ${variant === 'danger' ? 'bg-rose-500' : 'bg-laut'}`} />
 
                 <div className="p-8">
                     <div className="flex flex-col items-center text-center">

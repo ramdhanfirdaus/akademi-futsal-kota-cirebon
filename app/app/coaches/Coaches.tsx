@@ -130,8 +130,8 @@ const Coaches: React.FC = () => {
         <div className="space-y-6">
             {/* Header & Main Controls */}
             <AppHeader
-                title="Daftar Pelatih"
-                subtitle="Pengelolaan pelatih akademi"
+                title="Pelatih"
+                subtitle="Data pelatih, profil, dan foto untuk halaman depan"
                 actions={[
                     {
                         label: "Tambah Pelatih",
@@ -217,11 +217,11 @@ const Coaches: React.FC = () => {
                                     {coaches.map((coach) => (
                                         <tr
                                             key={coach.id}
-                                            className="hover:bg-blue-50/20 transition-all group"
+                                            className="hover:bg-laut-muda/20 transition-all group"
                                         >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-blue-50 flex items-center justify-center text-sm font-black text-blue-600">
+                                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-laut-muda flex items-center justify-center text-sm font-black text-laut">
                                                         {coach.photo_url ? (
                                                             <img src={coach.photo_url} alt="" className="h-full w-full object-cover" />
                                                         ) : (

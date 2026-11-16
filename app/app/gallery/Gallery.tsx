@@ -7,7 +7,7 @@ import { Check, ImagePlus, Trash2 } from 'lucide-react';
 import { GalleryService } from '@/services';
 import type { GalleryItem } from '@/services/GalleryService';
 import { apiErrorMessage } from '@/services/errors';
-import { ConfirmModal, LoadingSpinner, useNotification } from '@/components';
+import { AppHeader, ConfirmModal, LoadingSpinner, useNotification } from '@/components';
 import { resizeImage } from '@/lib/image';
 
 export default function Gallery() {
@@ -67,37 +67,20 @@ export default function Gallery() {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="font-display text-4xl font-black uppercase text-laut-dalam">Galeri</h2>
-          <p className="text-slate-500">
+      <AppHeader
+        title="Galeri"
+        subtitle={
+          <>
             Foto di sini tampil di bagian Galeri pada{' '}
             <Link href="/#galeri" target="_blank" className="font-bold text-laut hover:underline">
               halaman depan
             </Link>
             . Foto otomatis diperkecil sebelum diunggah.
-          </p>
-        </div>
-        <div>
-          <button
-            type="button"
-            onClick={() => fileInput.current?.click()}
-            disabled={!!progress}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-laut-dalam px-5 py-2.5 font-bold text-white hover:bg-laut disabled:bg-slate-400 md:w-auto"
-          >
-            <ImagePlus size={18} aria-hidden />
-            {progress ? `Mengunggah ${progress.done} dari ${progress.total}…` : 'Tambah foto'}
-          </button>
-          <input
-            ref={fileInput}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-            className="hidden"
-            onChange={(e) => upload(e.target.files)}
-          />
-        </div>
-      </header>
+          </>
+        }
+        actions={[{ label: progress ? `Mengunggah ${progress.done} dari ${progress.total}…` : 'Tambah foto', icon: ImagePlus, onClick: () => fileInput.current?.click(), disabled: !!progress }]}
+      />
+      <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(e) => upload(e.target.files)} />
 
       {items === null ? (
         <LoadingSpinner text="Memuat galeri..." />
