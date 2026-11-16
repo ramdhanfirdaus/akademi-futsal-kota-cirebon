@@ -97,26 +97,47 @@ export default function ResultsTab({ semester, onChange }: { semester: SemesterD
     }
   };
 
-  /** Builds every numbered certificate in this browser (avoids server time limits), then zips them. */
+  /**
+   * Builds every numbered certificate in this browser (avoids server time limits) and saves them as
+   * ZIP files of at most 50 certificates, so memory stays bounded. Each track's template image is
+   * downloaded once, not once per certificate.
+   */
   const downloadZip = async () => {
     const { zipSync } = await import('fflate');
-    const files: Record<string, Uint8Array> = {};
+    const PER_ZIP = 50;
+    const images = new Map<string, Uint8Array>();
+    const base = `Sertifikat-${semester.name.replace(/[^A-Za-z0-9-]+/g, '-')}`;
+    const parts = Math.ceil(numbered.length / PER_ZIP);
+    const save = (files: Record<string, Uint8Array>, part: number) => {
+      const url = URL.createObjectURL(new Blob([zipSync(files, { level: 0 }) as BlobPart], { type: 'application/zip' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = parts > 1 ? `${base}-bagian-${part}-dari-${parts}.zip` : `${base}.zip`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    };
     setZip({ done: 0, total: numbered.length });
     try {
+      let files: Record<string, Uint8Array> = {};
       for (const [i, r] of numbered.entries()) {
-        const input = fromJsonInput((await AssessmentService.certificateInput(r.assessment_id!)).data);
+        const json = (await AssessmentService.certificateInput(r.assessment_id!, false)).data;
+        let image = images.get(json.image_url);
+        if (!image) {
+          const res = await fetch(json.image_url);
+          if (!res.ok) throw new Error('Gambar template tidak bisa diunduh');
+          image = new Uint8Array(await res.arrayBuffer());
+          images.set(json.image_url, image);
+        }
+        const input = { ...fromJsonInput(json), image };
         let name = input.fileName;
         for (let n = 2; files[name]; n++) name = input.fileName.replace(/\.pdf$/, `-${n}.pdf`);
         files[name] = await buildCertificatePdf(input);
         setZip({ done: i + 1, total: numbered.length });
+        if ((i + 1) % PER_ZIP === 0 || i === numbered.length - 1) {
+          save(files, Math.ceil((i + 1) / PER_ZIP));
+          files = {};
+        }
       }
-      const blob = new Blob([zipSync(files, { level: 0 }) as BlobPart], { type: 'application/zip' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Sertifikat-${semester.name.replace(/[^A-Za-z0-9-]+/g, '-')}.zip`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 10_000);
     } catch (e) {
       showNotification({ type: 'error', message: apiErrorMessage(e, 'Gagal membuat ZIP') });
     } finally {
@@ -196,7 +217,7 @@ export default function ResultsTab({ semester, onChange }: { semester: SemesterD
                           <Download size={16} aria-hidden /> {r.certificate_no ? 'Unduh' : 'Pratinjau'}
                         </a>
                       )}
-                      {isAdmin && r.status === 'NONAKTIF' && (
+                      {isAdmin && r.status === 'NONAKTIF' && !r.certificate_no && (
                         <button
                           type="button"
                           onClick={() => setDeleteTarget(r)}
@@ -225,7 +246,7 @@ export default function ResultsTab({ semester, onChange }: { semester: SemesterD
 
       <BaseModal open={!!summary} onClose={() => setSummary(null)} title="Terbitkan nilai?" subtitle={semester.name} maxWidth="max-w-xl">
         {summary && (
-          <div className="space-y-4 text-sm">
+          <div className="max-h-[75vh] space-y-4 overflow-y-auto p-6 text-sm">
             {(['PLAYER', 'GOALKEEPER'] as const).map((t) => (
               <div key={t}>
                 <p className="font-bold text-laut-dalam">

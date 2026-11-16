@@ -148,3 +148,13 @@ describe('saveGrades', () => {
     expect(await status(deleteAssessment(db, row.id))).toBe(404);
   });
 });
+
+describe('deleteAssessment of a numbered certificate', () => {
+  it('is refused so the number is never issued again', async () => {
+    await save([{ student_id: andi, scores: { [p1]: 'BAIK', [p2]: 'BAIK' } }]);
+    const [row] = await db.select().from(assessments);
+    await db.update(assessments).set({ certificateSeq: 1 }).where(eq(assessments.id, row.id));
+    expect(await status(deleteAssessment(db, row.id))).toBe(409);
+    expect(await db.select().from(assessments)).toHaveLength(1);
+  });
+});

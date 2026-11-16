@@ -73,6 +73,17 @@ export async function semesterRow(db: Db | Tx, id: number): Promise<SemesterRow>
   return row;
 }
 
+/** Like semesterRow, but locks the row until the transaction ends, so publish and edits never interleave. */
+export async function lockSemester(tx: Tx, id: number): Promise<SemesterRow> {
+  const [row] = await tx
+    .select()
+    .from(assessmentSemesters)
+    .where(and(eq(assessmentSemesters.id, id), isNull(assessmentSemesters.deletedAt)))
+    .for('update');
+  if (!row) throw notFound();
+  return row;
+}
+
 /** Aspects of each semester grouped by track, in order. */
 export async function semesterAspects(db: Db | Tx, semesterIds: number[]): Promise<Map<number, Record<Track, AspectDTO[]>>> {
   const out = new Map<number, Record<Track, AspectDTO[]>>();
@@ -192,10 +203,9 @@ export async function deleteSemester(db: Db, id: number): Promise<void> {
 export async function saveAspects(db: Db, id: number, trackInput: unknown, input: unknown): Promise<SemesterDTO> {
   const track = trackSchema.parse(trackInput);
   const list = aspectsSchema.parse(input);
-  const row = await semesterRow(db, id);
-  if (row.status !== 'DRAFT') throw conflict('Semester sudah diterbitkan; batalkan terbit untuk mengubah aspek');
-
   await db.transaction(async (tx) => {
+    const row = await lockSemester(tx, id);
+    if (row.status !== 'DRAFT') throw conflict('Semester sudah diterbitkan; batalkan terbit untuk mengubah aspek');
     const where = and(eq(assessmentAspects.semesterId, id), eq(assessmentAspects.track, track));
     const existing = await tx.select({ id: assessmentAspects.id }).from(assessmentAspects).where(where);
     const known = new Set(existing.map((a) => a.id));
@@ -216,6 +226,16 @@ export async function saveAspects(db: Db, id: number, trackInput: unknown, input
             scores: sql`${assessments.scores} - ${String(aspectId)}::text`,
           })
           .where(and(eq(assessments.semesterId, id), eq(assessments.track, track)));
+      }
+      // A removed aspect's spot on the certificate template goes too.
+      const gone = new Set(removed.map((r) => `aspect:${r}`));
+      const tmpl = and(eq(assessmentTemplates.semesterId, id), eq(assessmentTemplates.track, track));
+      const [t] = await tx.select({ fields: assessmentTemplates.fields }).from(assessmentTemplates).where(tmpl);
+      if (t && t.fields.some((f) => gone.has(f.key))) {
+        await tx
+          .update(assessmentTemplates)
+          .set({ fields: t.fields.filter((f) => !gone.has(f.key)) })
+          .where(tmpl);
       }
     }
     // Two passes so the (semester, track, sort_order) unique constraint never sees a duplicate mid-update.

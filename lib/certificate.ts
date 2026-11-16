@@ -13,6 +13,7 @@ export type CertificateValues = Record<string, string>;
 export const A4_WIDTH = 595.28;
 const MIN_SCALE = 0.6;
 const ELLIPSIS = '…';
+const FIT_TOLERANCE = 1e-6;
 
 /** A4 width; height follows the image's aspect ratio (portrait or landscape). */
 export function pageSize(widthPx: number, heightPx: number): { width: number; height: number } {
@@ -52,7 +53,8 @@ export function layoutCertificate(fields: TemplateField[], values: CertificateVa
     const full = measure(text, f.font, size);
     if (full > boxWidth) {
       size = Math.max(f.fontSize * MIN_SCALE, (f.fontSize * boxWidth) / full);
-      if (measure(text, f.font, size) > boxWidth) {
+      // Tolerance: re-measuring at the computed size can exceed the box by float error only.
+      if (measure(text, f.font, size) > boxWidth + FIT_TOLERANCE) {
         while (text.length > 1 && measure(text + ELLIPSIS, f.font, size) > boxWidth) text = text.slice(0, -1).trimEnd();
         text += ELLIPSIS;
       }
@@ -120,7 +122,7 @@ export function certificateFileName(name: string, semester: string, track: Track
 }
 
 /** JSON-safe form (image as base64) for sending certificate input to the browser. */
-export type CertificateInputJson = Omit<CertificateInput, 'image'> & { image: string; fileName: string };
+export type CertificateInputJson = Omit<CertificateInput, 'image'> & { image: string; image_url: string; fileName: string };
 
 export function fromJsonInput(json: CertificateInputJson): CertificateInput & { fileName: string } {
   const bin = atob(json.image);

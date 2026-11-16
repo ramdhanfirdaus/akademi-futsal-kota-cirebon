@@ -5,6 +5,8 @@ import { makeClass, makeCoach, makeStudent } from './helpers/fixtures';
 import { assessmentSemesters, assessments } from '@/server/db/schema';
 import type { Db } from '@/server/db';
 import { fail } from '@/server/http';
+import { PNG_1X1 } from './helpers/images';
+import { getTemplate, saveTemplateFields, saveTemplateImage } from '@/server/services/assessments/templates';
 import { createSemester, deleteSemester, getSemester, listSemesters, saveAspects, updateSemester } from '@/server/services/assessments/semesters';
 
 let db: Db;
@@ -108,5 +110,17 @@ describe('semesters', () => {
       certificate_date: '2026-06-30',
       number_format: '{urut}',
     });
+  });
+});
+
+describe('aspect deletion and templates', () => {
+  it('removes the deleted aspect from template fields', async () => {
+    const s = await createSemester(db, { name: 'S1', number_format: '{urut}' });
+    const [a, b] = (await saveAspects(db, s.id, 'PLAYER', [{ name: 'A' }, { name: 'B' }])).aspects.PLAYER;
+    await saveTemplateImage(db, s.id, 'PLAYER', { image: PNG_1X1, width_px: 10, height_px: 14 });
+    const f = (key: string) => ({ key, x: 0.1, y: 0.5, width: 0.5, fontSize: 12, font: 'Helvetica' as const, align: 'left' as const, color: '#000000' });
+    await saveTemplateFields(db, s.id, 'PLAYER', [f('name'), f(`aspect:${a.id}`), f(`aspect:${b.id}`)]);
+    await saveAspects(db, s.id, 'PLAYER', [{ id: b.id, name: 'B' }]);
+    expect((await getTemplate(db, s.id, 'PLAYER'))!.fields.map((x) => x.key)).toEqual(['name', `aspect:${b.id}`]);
   });
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { pngBytes } from './helpers/images';
-import { buildCertificatePdf, certificateFileName, layoutCertificate, pageSize, toWinAnsi } from '@/lib/certificate';
+import { A4_WIDTH, buildCertificatePdf, certificateFileName, layoutCertificate, pageSize, toWinAnsi } from '@/lib/certificate';
 import type { TemplateField } from '@/lib/assessment';
 
 const field = (key: string, extra: Partial<TemplateField> = {}): TemplateField => ({
@@ -80,5 +80,30 @@ describe('certificate layout', () => {
   it('file name', () => {
     expect(certificateFileName('Budi Santoso', '2026 Semester 1', 'PLAYER')).toBe('Sertifikat-Budi-Santoso-2026-Semester-1-Pemain.pdf');
     expect(certificateFileName("Nguyễn  O'Neil", 'S1/2026', 'GOALKEEPER')).toBe('Sertifikat-Nguyen-O-Neil-S1-2026-Kiper.pdf');
+  });
+});
+
+describe('certificate layout with real font metrics', () => {
+  it('a name that only needs shrinking is never cut', async () => {
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.TimesRomanBold);
+    const measure = (t: string, _f: string, s: number) => font.widthOfTextAtSize(t, s);
+    const names = ['Muhammad Rizky Pratama Putra', 'Siti Nurhaliza Rahmawati', 'Ahmad Fauzan Hidayatullah', 'Dewi Kartika Sari Wulandari'];
+    let shrunk = 0;
+    for (const name of names) {
+      for (const width of [0.3, 0.35, 0.4, 0.45, 0.5]) {
+        for (const fontSize of [18, 20, 22, 24, 28]) {
+          const f = field('name', { width, fontSize, font: 'TimesRomanBold' });
+          const boxWidth = width * A4_WIDTH;
+          const minFits = measure(name, '', fontSize * 0.6) <= boxWidth;
+          const [d] = layoutCertificate([f], { name }, { width: A4_WIDTH, height: 842 }, measure);
+          if (d.size < fontSize && minFits) {
+            shrunk++;
+            expect(d.text, `${name} ${width} ${fontSize}`).toBe(name);
+          }
+        }
+      }
+    }
+    expect(shrunk).toBeGreaterThan(10);
   });
 });

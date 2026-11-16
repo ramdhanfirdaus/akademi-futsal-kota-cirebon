@@ -8,7 +8,7 @@ import { eligibleTracks, formatCertificateNo, isComplete, SEQ_TOKEN, TRACKS, typ
 import { classLabel } from '@/lib/format';
 import { todayWIB } from '@/lib/date';
 import type { Tx } from '../users';
-import { getSemester, semesterAspects, semesterRow, type SemesterDTO } from './semesters';
+import { getSemester, lockSemester, semesterAspects, semesterRow, type SemesterDTO } from './semesters';
 
 const TRACK_ORDER: Record<Track, number> = { PLAYER: 0, GOALKEEPER: 1 };
 
@@ -66,7 +66,7 @@ export async function publishSummary(db: Db | Tx, semesterId: number): Promise<P
  */
 export async function publishSemester(db: Db, semesterId: number): Promise<SemesterDTO> {
   await db.transaction(async (tx) => {
-    const row = await semesterRow(tx, semesterId);
+    const row = await lockSemester(tx, semesterId);
     const summary = await publishSummary(tx, semesterId);
     if (summary.missing_templates.length) {
       throw conflict(`Unggah template sertifikat ${summary.missing_templates.map((t) => (t === 'PLAYER' ? 'Pemain' : 'Kiper')).join(' dan ')} dulu`);
@@ -87,7 +87,8 @@ export async function publishSemester(db: Db, semesterId: number): Promise<Semes
         status: 'PUBLISHED',
         publishedAt: now,
         firstPublishedAt: row.firstPublishedAt ?? now,
-        certificateDate: row.certificateDate ?? todayWIB(),
+        // Keeps an admin-set date; otherwise the first publish date (also after the admin cleared it).
+        certificateDate: row.certificateDate ?? (row.firstPublishedAt ? row.firstPublishedAt.slice(0, 10) : todayWIB()),
         updatedAt: now,
       })
       .where(eq(assessmentSemesters.id, semesterId));
@@ -97,8 +98,10 @@ export async function publishSemester(db: Db, semesterId: number): Promise<Semes
 
 /** Back to draft so grades can be fixed; numbers stay. */
 export async function unpublishSemester(db: Db, semesterId: number): Promise<SemesterDTO> {
-  await semesterRow(db, semesterId);
-  await db.update(assessmentSemesters).set({ status: 'DRAFT', updatedAt: nowIso() }).where(eq(assessmentSemesters.id, semesterId));
+  await db.transaction(async (tx) => {
+    await lockSemester(tx, semesterId);
+    await tx.update(assessmentSemesters).set({ status: 'DRAFT', updatedAt: nowIso() }).where(eq(assessmentSemesters.id, semesterId));
+  });
   return getSemester(db, semesterId);
 }
 

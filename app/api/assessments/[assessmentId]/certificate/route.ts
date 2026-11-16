@@ -6,7 +6,7 @@ type P = { assessmentId: string };
 
 /** Built on request from the template and grades; students only get their own published one (else 404). */
 export const GET = route<P>({ roles: EVERYONE }, async ({ db, actor, params }) => {
-  const { fileName, ...input } = await certificateInput(db, actor!, idParam(params.assessmentId));
+  const { fileName, imageUrl: _imageUrl, ...input } = await certificateInput(db, actor!, idParam(params.assessmentId));
   const pdf = await buildCertificatePdf(input);
   return new Response(Buffer.from(pdf), {
     headers: {

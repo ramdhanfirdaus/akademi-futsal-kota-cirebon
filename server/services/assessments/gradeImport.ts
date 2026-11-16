@@ -67,6 +67,9 @@ export async function importGrades(db: Db, actor: Actor, input: unknown): Promis
   if (Object.keys(errors).length) throw invalid(errors);
   if (d.dry_run) return { dry_run: true, count: changes.length };
 
-  await db.transaction((tx) => writeGrades(tx, d.semester_id, d.class_id, d.track, changes, actor.userId));
+  await db.transaction(async (tx) => {
+    await draftSemester(tx, d.semester_id, true);
+    await writeGrades(tx, d.semester_id, d.class_id, d.track, changes, actor.userId);
+  });
   return { dry_run: false, count: changes.length };
 }

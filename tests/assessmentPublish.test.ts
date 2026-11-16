@@ -114,3 +114,30 @@ describe('publish', () => {
     expect(await db.select().from(assessments)).toHaveLength(2);
   });
 });
+
+describe('locking', () => {
+  it('publish, unpublish, grade saves and aspect saves lock the semester row', async () => {
+    const queries: string[] = [];
+    const ldb = await createTestDb({ onQuery: (q) => queries.push(q) });
+    const coach = await makeCoach(ldb);
+    const { classId: cls } = await makeClass(ldb, { coachId: coach.coachId });
+    const { studentId } = await makeStudent(ldb, { classId: cls });
+    const sem = await createSemester(ldb, { name: 'L', number_format: '{urut}' });
+    const [a] = (await saveAspects(ldb, sem.id, 'PLAYER', [{ name: 'X' }])).aspects.PLAYER;
+    const locks = () => queries.filter((q) => /for update/i.test(q) && /assessment_semesters/.test(q)).length;
+    const steps: [string, () => Promise<unknown>][] = [
+      ['saveAspects', () => saveAspects(ldb, sem.id, 'PLAYER', [{ id: a.id, name: 'X' }])],
+      [
+        'saveGrades',
+        () => saveGrades(ldb, actor, { semester_id: sem.id, class_id: cls, track: 'PLAYER', rows: [{ student_id: studentId, scores: { [a.id]: 'BAIK' } }] }),
+      ],
+      ['publish', () => saveTemplateImage(ldb, sem.id, 'PLAYER', { image: PNG_1X1, width_px: 10, height_px: 14 }).then(() => publishSemester(ldb, sem.id))],
+      ['unpublish', () => unpublishSemester(ldb, sem.id)],
+    ];
+    for (const [name, step] of steps) {
+      const before = locks();
+      await step();
+      expect(locks(), name).toBeGreaterThan(before);
+    }
+  });
+});

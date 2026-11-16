@@ -11,7 +11,8 @@ import { createSemester, saveAspects, updateSemester } from '@/server/services/a
 import { saveGrades } from '@/server/services/assessments/grades';
 import { saveTemplateImage } from '@/server/services/assessments/templates';
 import { publishSemester } from '@/server/services/assessments/publish';
-import { certificateInput, myGrades } from '@/server/services/assessments/certificates';
+import { certificateInput, myGrades, toJsonInput } from '@/server/services/assessments/certificates';
+import { formatDate } from '@/lib/date';
 
 let db: Db;
 let staff: Actor;
@@ -123,5 +124,24 @@ describe('myGrades', () => {
       },
     ]);
     expect(await myGrades(db, budiActor)).toEqual([]);
+  });
+});
+
+describe('certificate date', () => {
+  it('a cleared date falls back to the first publish date', async () => {
+    const sem = await publishSemester(db, semId);
+    await updateSemester(db, semId, { certificate_date: null });
+    const input = await certificateInput(db, andiActor, await idOf(andi));
+    expect(input.values.published_date).toBe(formatDate(sem.first_published_at!.slice(0, 10)));
+    expect(input.values.published_date).not.toBe('');
+  });
+});
+
+describe('toJsonInput without image', () => {
+  it('can leave the image out for bulk ZIP', async () => {
+    await publishSemester(db, semId);
+    const json = toJsonInput(await certificateInput(db, staff, await idOf(andi)), { withImage: false });
+    expect(json.image).toBe('');
+    expect(json.image_url).toMatch(/\/templates\/PLAYER\/image\?v=/);
   });
 });

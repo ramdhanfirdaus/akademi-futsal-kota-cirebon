@@ -118,7 +118,7 @@ function CreateSemesterModal({ open, onClose, onCreated }: { open: boolean; onCl
 
   return (
     <BaseModal open={open} onClose={onClose} title="Buat semester" subtitle="Penilaian baru" maxWidth="max-w-lg">
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className="max-h-[75vh] space-y-5 overflow-y-auto p-6">
         <div>
           <FormInput label="Nama semester" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Mis. 2026 Semester 1" maxLength={255} />
           {errors.name && <p className="mt-1 px-2 text-sm text-rose-600">{errors.name[0]}</p>}

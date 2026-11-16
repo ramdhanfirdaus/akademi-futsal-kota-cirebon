@@ -130,7 +130,7 @@ export default function GradeImport({
 
   return (
     <BaseModal open={open} onClose={close} title="Impor nilai dari Excel" subtitle={`${classLabel(className)} · ${TRACK_LABEL[track]}`} maxWidth="max-w-4xl">
-      <div className="space-y-4 text-sm">
+      <div className="max-h-[75vh] space-y-4 overflow-y-auto p-6 text-sm">
         {step === 'pick' && (
           <>
             <ol className="list-decimal space-y-1 pl-5 text-slate-600">

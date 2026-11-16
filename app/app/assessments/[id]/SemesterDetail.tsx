@@ -153,7 +153,7 @@ function EditSemesterModal({
 
   return (
     <BaseModal open={open} onClose={onClose} title="Ubah semester" subtitle={semester.name} maxWidth="max-w-lg">
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className="max-h-[75vh] space-y-5 overflow-y-auto p-6">
         <FormInput label="Nama semester" required value={name} onChange={(e) => setName(e.target.value)} maxLength={255} />
         <div>
           <FormInput label="Format nomor sertifikat" required value={format} disabled={locked} onChange={(e) => setFormat(e.target.value)} maxLength={255} />

@@ -73,8 +73,9 @@ class AssessmentService {
   certificateUrl(assessmentId: number): string {
     return `/api/assessments/${assessmentId}/certificate`;
   }
-  certificateInput(assessmentId: number): Promise<ApiResponse<CertificateInputJson>> {
-    return api.get(`/assessments/${assessmentId}/certificate-input`);
+  /** `withImage: false` → `image` is empty; fetch `image_url` (cached) instead. */
+  certificateInput(assessmentId: number, withImage = true): Promise<ApiResponse<CertificateInputJson>> {
+    return api.get(`/assessments/${assessmentId}/certificate-input`, { params: withImage ? {} : { image: 0 } });
   }
   myGrades(): Promise<ApiResponse<MyGradesSemester[]>> {
     return api.get('/me/grades');

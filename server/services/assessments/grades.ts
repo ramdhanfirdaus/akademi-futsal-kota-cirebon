@@ -8,7 +8,7 @@ import { conflict, invalid, notFound } from '../../errors';
 import { chunks, id, nowIso } from '../../validation';
 import { eligibleTracks, formatCertificateNo, GRADES, type Grade, type Track } from '@/lib/assessment';
 import type { Tx } from '../users';
-import { PUBLISHED_LOCK, semesterRow, trackSchema } from './semesters';
+import { lockSemester, PUBLISHED_LOCK, semesterRow, trackSchema } from './semesters';
 
 export { isComplete } from '@/lib/assessment';
 
@@ -152,9 +152,9 @@ export async function writeGrades(tx: Tx, semesterId: number, classId: number, t
   return upserts.length;
 }
 
-/** Throws 409 unless the semester is a draft. */
-export async function draftSemester(db: Db | Tx, semesterId: number) {
-  const semester = await semesterRow(db, semesterId);
+/** Throws 409 unless the semester is a draft. Pass `lock` inside the write transaction. */
+export async function draftSemester(db: Db | Tx, semesterId: number, lock = false) {
+  const semester = lock ? await lockSemester(db, semesterId) : await semesterRow(db, semesterId);
   if (semester.status !== 'DRAFT') throw conflict(PUBLISHED_LOCK);
   return semester;
 }
@@ -185,11 +185,17 @@ export async function saveGrades(db: Db, actor: Actor, input: unknown): Promise<
   });
   if (Object.keys(errors).length) throw invalid(errors);
 
-  const saved = await db.transaction((tx) => writeGrades(tx, d.semester_id, d.class_id, d.track, d.rows, actor.userId));
+  const saved = await db.transaction(async (tx) => {
+    await draftSemester(tx, d.semester_id, true); // re-checked under lock: a publish may have committed meanwhile
+    return writeGrades(tx, d.semester_id, d.class_id, d.track, d.rows, actor.userId);
+  });
   return { saved };
 }
 
+/** Only un-numbered assessments can be deleted, so an issued certificate number is never handed out again. */
 export async function deleteAssessment(db: Db, assessmentId: number): Promise<void> {
-  const rows = await db.delete(assessments).where(eq(assessments.id, assessmentId)).returning({ id: assessments.id });
-  if (!rows.length) throw notFound();
+  const [row] = await db.select({ seq: assessments.certificateSeq }).from(assessments).where(eq(assessments.id, assessmentId));
+  if (!row) throw notFound();
+  if (row.seq !== null) throw conflict('Penilaian yang sudah bernomor tidak bisa dihapus agar nomornya tidak dipakai ulang');
+  await db.delete(assessments).where(eq(assessments.id, assessmentId));
 }

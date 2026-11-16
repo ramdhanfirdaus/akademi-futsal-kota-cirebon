@@ -18,7 +18,7 @@ export type { CertificateInputJson } from '@/lib/certificate';
  * published semester that is numbered, complete and active — anything else is a 404, so the
  * existence of other certificates is never confirmed. Staff may preview any assessment.
  */
-export async function certificateInput(db: Db, actor: Actor, assessmentId: number): Promise<CertificateInput & { fileName: string }> {
+export async function certificateInput(db: Db, actor: Actor, assessmentId: number): Promise<CertificateInput & { fileName: string; imageUrl: string }> {
   const [row] = await db
     .select({
       track: assessments.track,
@@ -29,6 +29,7 @@ export async function certificateInput(db: Db, actor: Actor, assessmentId: numbe
       status: assessmentSemesters.status,
       numberFormat: assessmentSemesters.numberFormat,
       certificateDate: assessmentSemesters.certificateDate,
+      firstPublishedAt: assessmentSemesters.firstPublishedAt,
       name: students.name,
       nickname: students.nickname,
       userId: students.userId,
@@ -62,7 +63,7 @@ export async function certificateInput(db: Db, actor: Actor, assessmentId: numbe
     class: classLabel(row.className),
     semester: row.semester,
     number: row.seq !== null ? formatCertificateNo(row.numberFormat, row.seq) : '—',
-    published_date: row.certificateDate ? formatDate(row.certificateDate) : '',
+    published_date: formatDate(row.certificateDate ?? row.firstPublishedAt?.slice(0, 10) ?? null).replace(/^-$/, ''),
   };
   for (const a of aspects) {
     const g = row.scores[String(a.id)];
@@ -77,11 +78,14 @@ export async function certificateInput(db: Db, actor: Actor, assessmentId: numbe
     values,
     title: `Sertifikat ${row.name} - ${row.semester}`,
     fileName: certificateFileName(row.name, row.semester, row.track),
+    imageUrl: `/api/assessments/semesters/${row.semesterId}/templates/${row.track}/image?v=${encodeURIComponent(template.updated_at)}`,
   };
 }
 
-export function toJsonInput(input: CertificateInput & { fileName: string }): CertificateInputJson {
-  return { ...input, image: Buffer.from(input.image).toString('base64') };
+/** `withImage: false` leaves the template bytes out; the browser fetches `image_url` once per track instead. */
+export function toJsonInput(input: CertificateInput & { fileName: string; imageUrl: string }, opts: { withImage?: boolean } = {}): CertificateInputJson {
+  const { imageUrl, ...rest } = input;
+  return { ...rest, image: opts.withImage === false ? '' : Buffer.from(input.image).toString('base64'), image_url: imageUrl };
 }
 
 export type MyGradesSemester = {
