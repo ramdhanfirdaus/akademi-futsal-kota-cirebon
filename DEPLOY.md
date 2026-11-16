@@ -174,6 +174,9 @@ Setiap kali ada perubahan kode:
    Menjalankan `db:migrate` saat tidak ada migrasi baru tidak apa-apa. Perintah itu tidak mengubah
    apa pun.
 
+   Contoh: fitur Penilaian menambah migrasi `0006_assessments` (tabel semester, aspek, template, nilai).
+   Jalankan migrasi ini (dan `0005_optional_position` bila belum) ke Neon sebelum merilis fitur itu.
+
 2. Pastikan test lolos: `npm test`
 3. Coba dulu sebagai draft dengan `netlify deploy`, lalu rilis dengan `netlify deploy --prod`.
 
@@ -193,7 +196,8 @@ migrasi di AFKC selalu dibuat aman untuk versi lama, yaitu hanya menambah tabel 
 - Sisa kredit bisa dilihat di dashboard Netlify → **Usage**.
 
 **Neon:**
-- Penyimpanan 0,5 GB. Foto pelatih dan galeri disimpan di database, jadi unggah foto pilihan saja.
+- Penyimpanan 0,5 GB. Foto pelatih, galeri, dan gambar template sertifikat (maks. 4 MB, dua per semester)
+  disimpan di database, jadi unggah foto pilihan saja. PDF sertifikat tidak disimpan; dibuat saat diunduh.
 - Database "tidur" kalau tidak dipakai beberapa menit. Akses pertama setelahnya bisa ±1 detik lebih lambat.
 
 ---
