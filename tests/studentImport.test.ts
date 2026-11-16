@@ -114,3 +114,30 @@ describe('importStudents', () => {
     expect((await errorsOf(importStudents(db, { rows: Array.from({ length: 501 }, () => row()) }))).status).toBe(422);
   });
 });
+
+describe('large imports', () => {
+  // Netlify functions stop after ~10 s: a class-sized import must not do per-row round trips or hashing.
+  it('saves 300 students in a handful of queries, hashing each distinct password once', async () => {
+    let queries = 0;
+    let counting = false;
+    const big = await createTestDb({ onQuery: () => counting && queries++ });
+    const { coachId } = await makeCoach(big);
+    await makeClass(big, { coachId, name: 'A' });
+    await importStudents(big, { rows: [{ name: 'Ada', nickname: 'Budi', class: 'A' }] }); // budi01 already taken
+    const rows = Array.from({ length: 300 }, (_, i) => ({ name: `Siswa ${i}`, nickname: i % 3 ? `Budi` : `Nama${i}`, class: 'A', ...(i === 7 ? { password: 'rahasia7' } : {}) }));
+    counting = true;
+    const started = Date.now();
+    const res = await importStudents(big, { rows });
+    counting = false;
+    expect(res.count).toBe(300);
+    expect(queries).toBeLessThan(20);
+    expect(Date.now() - started).toBeLessThan(8000);
+    const all = await big.select({ username: users.username, password: users.password }).from(users).where(eq(users.role, 'STUDENT'));
+    expect(new Set(all.map((u) => u.username)).size).toBe(301);
+    expect(all.some((u) => u.username === 'budi02')).toBe(true);
+    const seven = res.created.find((c) => c.row === 9)!;
+    const pw = all.find((u) => u.username === seven.username)!.password;
+    expect(await verifyPassword('rahasia7', pw)).toBe(true);
+    expect(await verifyPassword('afkc2026', all.find((u) => u.username === res.created[0].username)!.password)).toBe(true);
+  }, 60000);
+});

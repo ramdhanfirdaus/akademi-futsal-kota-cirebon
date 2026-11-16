@@ -1,5 +1,5 @@
 import 'server-only';
-import { eq, like, sql } from 'drizzle-orm';
+import { eq, like, or, sql } from 'drizzle-orm';
 import type { PgUpdateSetSource } from 'drizzle-orm/pg-core';
 import { users } from '../db/schema';
 import type { Db } from '../db';
@@ -21,6 +21,32 @@ export function slugBase(nickname: string | null | undefined, fallback: 'siswa' 
 }
 
 /** First free `<base>01`, `<base>02`, … username. */
+/**
+ * Usernames for many new accounts at once (`budi01`, `budi02`, …), with one lookup per 100 distinct
+ * bases instead of one per account. Returned in the same order as `bases`.
+ */
+export async function generateUsernames(tx: Tx, bases: string[]): Promise<string[]> {
+  const distinct = [...new Set(bases)];
+  const taken = new Set<string>();
+  for (let i = 0; i < distinct.length; i += 100) {
+    const part = distinct.slice(i, i + 100);
+    const rows = await tx
+      .select({ username: users.username })
+      .from(users)
+      .where(or(...part.map((b) => like(users.username, `${b}%`))));
+    for (const r of rows) taken.add(r.username);
+  }
+  return bases.map((base) => {
+    for (let n = 1; ; n++) {
+      const candidate = `${base}${String(n).padStart(2, '0')}`;
+      if (!taken.has(candidate)) {
+        taken.add(candidate);
+        return candidate;
+      }
+    }
+  });
+}
+
 export async function generateUsername(tx: Tx, base: string): Promise<string> {
   const rows = await tx.select({ username: users.username }).from(users).where(like(users.username, `${base}%`));
   const taken = new Set(rows.map((r) => r.username));

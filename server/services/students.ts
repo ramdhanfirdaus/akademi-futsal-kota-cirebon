@@ -6,8 +6,9 @@ import type { Db } from '../db';
 import type { Actor } from '../auth';
 import { forbidden, invalid, notFound } from '../errors';
 import { monthKey, todayWIB } from '@/lib/date';
-import { id, nowIso, optDate, optMonth, optEnum, optLongText, optStr, optText, pageMeta, pageQuery, optPassword, password, reqText, yearJoin } from '../validation';
-import { createUser, deactivateUser, generateUsername, slugBase, updateUser, withUsernameRetry, type Tx } from './users';
+import { chunks, id, nowIso, optDate, optMonth, optEnum, optLongText, optStr, optText, pageMeta, pageQuery, optPassword, password, reqText, yearJoin } from '../validation';
+import { hashPassword } from '../auth';
+import { deactivateUser, generateUsernames, slugBase, updateUser, withUsernameRetry, type Tx } from './users';
 
 const GENDERS = ['MALE', 'FEMALE'] as const;
 const BLOOD = ['A', 'B', 'AB', 'O'] as const;
@@ -171,21 +172,50 @@ export type NewStudent = z.infer<typeof createSchema>;
 
 /** Inserts one already-validated student (user + profile + enrolment) inside an open transaction. */
 export async function insertStudent(tx: Tx, d: NewStudent): Promise<{ studentId: number; username: string }> {
-  const username = await generateUsername(tx, slugBase(d.nickname, 'siswa'));
-  const user = await createUser(tx, { username, password: d.password ?? DEFAULT_STUDENT_PASSWORD, role: 'STUDENT' });
-  const [s] = await tx
-    .insert(students)
-    .values({ userId: user.id, name: d.name, nickname: d.nickname, ...bioColumns(d) })
-    .returning({ id: students.id });
-  await tx.insert(academyStudents).values({
-    studentId: s.id,
-    classId: d.class_id,
-    position: d.position ?? null,
-    yearJoin: d.year_join ?? Number(todayWIB().slice(0, 4)),
-    isGoalkeeper: d.is_goalkeeper ?? false,
-    feeStart: d.fee_start ?? `${monthKey(todayWIB())}-01`,
-  });
-  return { studentId: s.id, username };
+  const [created] = await insertStudents(tx, [d]);
+  return created;
+}
+
+/**
+ * Inserts many already-validated students in a few batched statements (results in input order).
+ * Each distinct password is hashed once, so a class-sized import fits a serverless time limit.
+ */
+export async function insertStudents(tx: Tx, list: NewStudent[]): Promise<{ studentId: number; username: string }[]> {
+  if (!list.length) return [];
+  const passwords = [...new Set(list.map((d) => d.password ?? DEFAULT_STUDENT_PASSWORD))];
+  const hashes = new Map(await Promise.all(passwords.map(async (p) => [p, await hashPassword(p)] as const)));
+  const usernames = await generateUsernames(
+    tx,
+    list.map((d) => slugBase(d.nickname, 'siswa')),
+  );
+  const year = Number(todayWIB().slice(0, 4));
+  const month = `${monthKey(todayWIB())}-01`;
+
+  const out: { studentId: number; username: string }[] = [];
+  for (const part of chunks(list.map((d, i) => ({ d, username: usernames[i] })), 300)) {
+    const userRows = await tx
+      .insert(users)
+      .values(part.map((p) => ({ username: p.username, password: hashes.get(p.d.password ?? DEFAULT_STUDENT_PASSWORD)!, role: 'STUDENT' as const })))
+      .returning({ id: users.id, username: users.username });
+    const userId = new Map(userRows.map((u) => [u.username, u.id]));
+    const studentRows = await tx
+      .insert(students)
+      .values(part.map((p) => ({ userId: userId.get(p.username)!, name: p.d.name, nickname: p.d.nickname, ...bioColumns(p.d) })))
+      .returning({ id: students.id, userId: students.userId });
+    const studentId = new Map(studentRows.map((s) => [s.userId, s.id]));
+    await tx.insert(academyStudents).values(
+      part.map((p) => ({
+        studentId: studentId.get(userId.get(p.username)!)!,
+        classId: p.d.class_id,
+        position: p.d.position ?? null,
+        yearJoin: p.d.year_join ?? year,
+        isGoalkeeper: p.d.is_goalkeeper ?? false,
+        feeStart: p.d.fee_start ?? month,
+      })),
+    );
+    for (const p of part) out.push({ studentId: studentId.get(userId.get(p.username)!)!, username: p.username });
+  }
+  return out;
 }
 
 export async function createStudent(db: Db, input: unknown): Promise<StudentDTO> {

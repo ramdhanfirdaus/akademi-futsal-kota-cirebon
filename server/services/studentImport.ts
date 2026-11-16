@@ -5,7 +5,7 @@ import { classes } from '../db/schema';
 import type { Db } from '../db';
 import { invalid } from '../errors';
 import { zodErrors } from '../http';
-import { createSchema, insertStudent, type NewStudent } from './students';
+import { createSchema, insertStudents, type NewStudent } from './students';
 import { withUsernameRetry } from './users';
 
 export const MAX_IMPORT_ROWS = 500;
@@ -101,12 +101,11 @@ export async function importStudents(db: Db, input: unknown): Promise<ImportResu
 
   const created = await withUsernameRetry(() =>
     db.transaction(async (tx) => {
-      const out: ImportResult['created'] = [];
-      for (const v of valid) {
-        const { username } = await insertStudent(tx, v.data);
-        out.push({ row: v.row, name: v.data.name, username, class: v.className });
-      }
-      return out;
+      const saved = await insertStudents(
+        tx,
+        valid.map((v) => v.data),
+      );
+      return valid.map((v, i): ImportResult['created'][number] => ({ row: v.row, name: v.data.name, username: saved[i].username, class: v.className }));
     }),
   );
   return { dry_run: false, count: created.length, created };
