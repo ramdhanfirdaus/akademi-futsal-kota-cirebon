@@ -16,9 +16,7 @@ describe('schema constraints', () => {
     const { coachId } = await makeCoach(db);
     const { classId } = await makeClass(db, { coachId });
     const { studentId } = await makeStudent(db, { classId });
-    await expect(
-      db.insert(academyStudents).values({ studentId, classId, position: 'FLANK', yearJoin: 2025 }),
-    ).rejects.toThrow();
+    await expect(db.insert(academyStudents).values({ studentId, classId, position: 'FLANK', yearJoin: 2025 })).rejects.toThrow();
   });
 
   it('blocks hard-deleting a schedule that has attendance', async () => {
@@ -47,7 +45,10 @@ describe('schema constraints', () => {
     const row = { semesterId: sem.id, studentId, track: 'PLAYER' as const, classId };
     await db.insert(assessments).values(row);
     await db.insert(assessments).values({ ...row, track: 'GOALKEEPER' });
-    const err = await db.insert(assessments).values(row).catch((e) => e);
+    const err = await db
+      .insert(assessments)
+      .values(row)
+      .catch((e) => e);
     expect(pgCode(err)).toBe('23505');
   });
 });
