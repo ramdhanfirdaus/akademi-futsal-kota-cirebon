@@ -52,6 +52,7 @@ export function pgConstraint(err: unknown): string | undefined {
 
 const CONFLICT_MESSAGES: Record<string, string> = {
   users_username_unique: 'Username sudah dipakai',
+  assessment_semesters_name: 'Nama semester sudah dipakai',
 };
 
 export function fail(err: unknown): Response {

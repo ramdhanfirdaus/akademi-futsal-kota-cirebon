@@ -53,11 +53,34 @@ non-komersial.
 |---|---|
 | ADMIN | semua menu, termasuk kelola pelatih |
 | COACH | siswa, kelas, absensi, pembayaran, bulan libur; hanya bisa mengubah akun pelatihnya sendiri |
-| STUDENT | dashboard pribadi (kelas, kehadiran & status iuran bulan ini) dan profil |
+| STUDENT | dashboard pribadi (kelas, kehadiran & status iuran bulan ini), nilai semester + sertifikat, dan profil |
 
 Semua pengguna bisa mengganti password sendiri di menu **My Profile**. Setelah password diganti (atau di-reset
 oleh admin/pelatih), semua sesi login di perangkat lain otomatis keluar.
 Menghapus siswa/pelatih menonaktifkan akunnya (data riwayat absensi & pembayaran tetap tersimpan).
+
+## Penilaian semester & sertifikat
+Menu **Penilaian** (admin & pelatih) untuk raport semester. Nilai per aspek hanya **Cukup / Baik / Sangat Baik**
+(tanpa nilai akhir atau rata-rata). Ada dua jalur: **Pemain** dan **Kiper**. Siswa berposisi Kiper hanya
+dinilai sebagai kiper; posisi lain (termasuk belum ditentukan) sebagai pemain; pemain yang "ikut latihan kiper"
+mendapat keduanya (dua sertifikat).
+
+Alur tiap semester:
+1. **Admin: Buat semester** — nama bebas (mis. "2026 Semester 1") dan format nomor yang memuat `{urut}`,
+   mis. `{urut}/S.FKC/XII/2025` → `004/S.FKC/XII/2025`. Aspek disalin dari semester sebelumnya.
+2. **Admin: tab Aspek** — tambah/ubah/urutkan aspek Pemain dan Kiper.
+3. **Admin: tab Template** — unggah desain sertifikat (PNG/JPG, maks. 4 MB, ekspor A4 dari Word/Canva dengan
+   tempat kosong untuk nama/nomor/nilai), centang isian lalu geser kotaknya ke posisinya, **Pratinjau PDF**.
+4. **Admin & pelatih: tab Nilai** — pilih kelas dan jalur, isi nilai di tabel, atau lewat Excel (unduh template
+   nilai → isi → unggah; satu baris salah = tidak ada yang disimpan; sel kosong = tidak diubah).
+5. **Admin: tab Hasil & Terbitkan** — lihat siapa yang belum lengkap, lalu **Terbitkan**. Penilaian lengkap
+   mendapat nomor urut (nama A–Z, satu urutan untuk Pemain & Kiper, Pemain dulu). Nomor tidak pernah berubah.
+   **Unduh semua (ZIP)** membuat semua PDF di browser admin.
+
+Setelah terbit, siswa melihat nilainya di menu **Nilai** dan bisa mengunduh sertifikat PDF. Nilai terkunci
+sampai admin **Batalkan terbit**; setelah diperbaiki dan diterbitkan lagi, nomor lama tetap dan yang baru lengkap
+mendapat nomor berikutnya. PDF dibuat saat diunduh (tidak disimpan), jadi hanya gambar template yang memakai
+penyimpanan database.
 
 ## Halaman depan (landing page)
 Halaman `/` menampilkan profil AFKC, jadwal latihan, dan daftar pelatih. Jadwal dan pelatih diambil otomatis

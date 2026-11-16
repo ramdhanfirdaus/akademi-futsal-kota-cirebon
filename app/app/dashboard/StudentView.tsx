@@ -10,6 +10,7 @@ import { DAYS, MONTH_KEYS } from '@/constants.tsx';
 import { LoadingSpinner, useNotification } from '@/components';
 import { dayOfWeek, todayWIB } from '@/lib/date';
 import { classLabel } from '@/lib/format';
+import LatestGradesCard from './LatestGradesCard';
 
 const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
@@ -166,6 +167,8 @@ export default function StudentView() {
           </div>
         </section>
       )}
+
+      <LatestGradesCard />
 
       {/* The year at a glance: one cell per month with attendance and fee status. */}
       <section className="rounded-xl border border-slate-200 bg-white p-5">
